@@ -15,7 +15,7 @@
 - [ ] 2-1. Supabaseプロジェクト作成（ダッシュボードで手動）
 - [ ] 2-2. @supabase/supabase-js インストール
 - [ ] 2-3. Supabaseクライアント初期化（環境変数から接続情報読み込み）
-- [ ] 2-4. .env.example 作成（VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY）
+- [ ] 2-4. .env.example 作成（VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY）
 
 ### 3. データベース構築
 

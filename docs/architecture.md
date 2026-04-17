@@ -62,7 +62,7 @@ Supabase RealtimeのPresence機能を使用する。
 
 ### RLS (Row Level Security)
 
-- `rooms`テーブルはAnon Keyで読み書き可能にする（ルームIDを知っている前提）
+- `rooms`テーブルは公開APIキーで読み書き可能にする（ルームIDを知っている前提）
 - INSERT: 誰でも作成可能
 - SELECT: 誰でも読み取り可能（IDを知っていれば）
 - UPDATE: 誰でも更新可能（topicの変更用）
