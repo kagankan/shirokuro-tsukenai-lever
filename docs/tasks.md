@@ -4,31 +4,31 @@
 
 ### 1. プロジェクト初期セットアップ
 
-- [ ] 1-1. Vite + React + TypeScript プロジェクト作成（pnpm create vite）
-- [ ] 1-2. Biome 導入・設定（biome.json）
-- [ ] 1-3. .gitignore 更新（Viteプロジェクト用）
+- [x] 1-1. Vite + React + TypeScript プロジェクト作成（pnpm create vite）
+- [x] 1-2. Biome 導入・設定（biome.json）
+- [x] 1-3. .gitignore 更新（Viteプロジェクト用）
 
 ### 2. Supabase セットアップ
 
 依存: 1-1
 
-- [ ] 2-1. Supabaseプロジェクト作成（ダッシュボードで手動）
-- [ ] 2-2. @supabase/supabase-js インストール
-- [ ] 2-3. Supabaseクライアント初期化（環境変数から接続情報読み込み）
-- [ ] 2-4. .env.example 作成（VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY）
+- [x] 2-1. Supabaseプロジェクト作成（ダッシュボードで手動）
+- [x] 2-2. @supabase/supabase-js インストール
+- [x] 2-3. Supabaseクライアント初期化（環境変数から接続情報読み込み）
+- [x] 2-4. .env.example 作成（VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY）
 
 ### 3. データベース構築
 
 依存: 2-1
 
-- [ ] 3-1. rooms テーブル作成（id, topic, created_at）
-- [ ] 3-2. RLS ポリシー設定（全操作許可）
+- [x] 3-1. rooms テーブル作成（id, topic, created_at）
+- [x] 3-2. RLS ポリシー設定（全操作許可）
 
 ### 4. トップページ
 
 依存: 1-1, 2-3, 3-1
 
-- [ ] 4-1. query param による画面分岐の実装（?room= の有無）
+- [x] 4-1. query param による画面分岐の実装（?room= の有無）
 - [ ] 4-2. トップページUI（アプリ名、「ルームを作成」ボタン）
 - [ ] 4-3. ルーム作成処理（rooms テーブルに INSERT → ?room={id} に遷移）
 
