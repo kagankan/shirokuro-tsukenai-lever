@@ -50,9 +50,9 @@
 
 依存: 6-1, 2-3
 
-- [ ] 7-1. お題の表示・編集UI
-- [ ] 7-2. お題の DB 更新（rooms.topic を UPDATE）
-- [ ] 7-3. お題変更のリアルタイム受信（Postgres Changes で subscribe）
+- [x] 7-1. お題の表示・編集UI
+- [x] 7-2. お題の DB 更新（rooms.topic を UPDATE）
+- [x] 7-3. お題変更のリアルタイム受信（Postgres Changes で subscribe）
 
 ### 8. レバーUIコンポーネント
 
