@@ -1,0 +1,58 @@
+.result-map {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-map__svg {
+  overflow: visible;
+  max-width: 100%;
+}
+
+.result-map__arc-track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.result-map__label-value {
+  font-size: 12px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  font-family: system-ui, sans-serif;
+}
+
+.result-map__label-edge {
+  font-size: 11px;
+  fill: var(--text-muted);
+  dominant-baseline: middle;
+  font-family: system-ui, sans-serif;
+}
+
+.result-map__player-emoji {
+  font-size: 24px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  font-family: system-ui, sans-serif;
+}
+
+.result-map__player-nickname {
+  font-size: 10px;
+  fill: var(--text);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  font-family: system-ui, sans-serif;
+}
+
+.result-map__player-value {
+  font-size: 11px;
+  fill: var(--accent);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  font-family: system-ui, sans-serif;
+  font-weight: 600;
+}
