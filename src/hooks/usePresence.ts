@@ -4,6 +4,7 @@ import type { IconId } from '../lib/icons';
 import { supabase } from '../lib/supabase';
 
 const MAX_PLAYERS = 8;
+const BROADCAST_THROTTLE_MS = 50;
 
 export type PresencePlayer = {
   presenceKey: string;
@@ -11,6 +12,8 @@ export type PresencePlayer = {
   iconId: IconId;
   value: number;
 };
+
+type LeverPayload = { presenceKey: string; value: number };
 
 type State =
   | { status: 'joining' }
@@ -22,65 +25,81 @@ export function usePresence(
   self: { nickname: string; iconId: IconId; value: number },
 ): {
   state: State;
-  updateValue: (value: number) => void;
+  broadcastLever: (value: number) => void;
 } {
   const [state, setState] = useState<State>({ status: 'joining' });
   const channelRef = useRef<RealtimeChannel | null>(null);
   const selfRef = useRef(self);
   selfRef.current = self;
+  const myKeyRef = useRef<string>(crypto.randomUUID());
+  // lever values from Broadcast, keyed by presenceKey
+  const leverValuesRef = useRef<Map<string, number>>(new Map());
+  const lastBroadcastRef = useRef<number>(0);
 
   useEffect(() => {
+    const myKey = myKeyRef.current;
+    leverValuesRef.current.set(myKey, selfRef.current.value);
+
     const channel = supabase.channel(`room:${roomId}`, {
-      config: { presence: { key: crypto.randomUUID() } },
+      config: { presence: { key: myKey } },
     });
 
     channelRef.current = channel;
 
-    const syncPlayers = () => {
-      const raw = channel.presenceState<{
-        nickname: string;
-        iconId: IconId;
-        value: number;
-      }>();
-      const players: PresencePlayer[] = Object.entries(raw).map(([key, metas]) => ({
+    const buildPlayers = (): PresencePlayer[] => {
+      const raw = channel.presenceState<{ nickname: string; iconId: IconId }>();
+      return Object.entries(raw).map(([key, metas]) => ({
         presenceKey: key,
         nickname: metas[0].nickname,
         iconId: metas[0].iconId,
-        value: metas[0].value,
+        value: leverValuesRef.current.get(key) ?? 50,
       }));
-      setState({ status: 'joined', players });
     };
 
-    channel.on('presence', { event: 'sync' }, syncPlayers).subscribe(async (status) => {
-      if (status !== 'SUBSCRIBED') return;
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        setState((prev) =>
+          prev.status === 'full' ? prev : { status: 'joined', players: buildPlayers() },
+        );
+      })
+      .on('broadcast', { event: 'lever_update' }, ({ payload }: { payload: LeverPayload }) => {
+        leverValuesRef.current.set(payload.presenceKey, payload.value);
+        setState((prev) =>
+          prev.status === 'joined' ? { status: 'joined', players: buildPlayers() } : prev,
+        );
+      })
+      .subscribe(async (status) => {
+        if (status !== 'SUBSCRIBED') return;
 
-      const presenceState = channel.presenceState();
-      const currentCount = Object.keys(presenceState).length;
-      if (currentCount >= MAX_PLAYERS) {
-        setState({ status: 'full' });
-        await supabase.removeChannel(channel);
-        return;
-      }
+        const currentCount = Object.keys(channel.presenceState()).length;
+        if (currentCount >= MAX_PLAYERS) {
+          setState({ status: 'full' });
+          await supabase.removeChannel(channel);
+          return;
+        }
 
-      await channel.track({
-        nickname: selfRef.current.nickname,
-        iconId: selfRef.current.iconId,
-        value: selfRef.current.value,
+        await channel.track({
+          nickname: selfRef.current.nickname,
+          iconId: selfRef.current.iconId,
+        });
       });
-    });
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [roomId]);
 
-  const updateValue = (value: number) => {
-    channelRef.current?.track({
-      nickname: selfRef.current.nickname,
-      iconId: selfRef.current.iconId,
-      value,
+  const broadcastLever = (value: number) => {
+    const now = Date.now();
+    if (now - lastBroadcastRef.current < BROADCAST_THROTTLE_MS) return;
+    lastBroadcastRef.current = now;
+    leverValuesRef.current.set(myKeyRef.current, value);
+    channelRef.current?.send({
+      type: 'broadcast',
+      event: 'lever_update',
+      payload: { presenceKey: myKeyRef.current, value } satisfies LeverPayload,
     });
   };
 
-  return { state, updateValue };
+  return { state, broadcastLever };
 }

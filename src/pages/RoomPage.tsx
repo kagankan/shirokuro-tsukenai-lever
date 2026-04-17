@@ -17,7 +17,7 @@ export function RoomPage({ roomId, player }: Props) {
   const roomState = useRoom(roomId);
   const [leverValue, setLeverValue] = useState(50);
 
-  const { state: presenceState, updateValue } = usePresence(roomId, {
+  const { state: presenceState, broadcastLever } = usePresence(roomId, {
     nickname: player.nickname,
     iconId: player.iconId,
     value: leverValue,
@@ -25,7 +25,7 @@ export function RoomPage({ roomId, player }: Props) {
 
   const handleLeverChange = (value: number) => {
     setLeverValue(value);
-    updateValue(value);
+    broadcastLever(value);
   };
 
   if (roomState.status === 'loading') {
