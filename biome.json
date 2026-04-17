@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!dist", "!node_modules", "!.claude"]
+    "includes": ["**", "!dist", "!node_modules", "!.claude", "!.mcp.json"]
   },
   "formatter": {
     "enabled": true,
