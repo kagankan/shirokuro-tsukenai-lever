@@ -3,10 +3,10 @@ import { ICON_PRESETS } from '../lib/icons';
 import './ResultMap.css';
 
 const CX = 160;
-const CY = 160;
-const RADIUS = 130;
-const MIN_ANGLE = -150; // degrees from top (value=0 → left)
-const MAX_ANGLE = -30; // degrees from top (value=100 → right)
+const CY = 165;
+const RADIUS = 135;
+const MIN_ANGLE = -120; // degrees from top (value=0 → lower-left)
+const MAX_ANGLE = 120; // degrees from top (value=100 → lower-right)
 
 function valueToPoint(value: number): { x: number; y: number } {
   const angleDeg = MIN_ANGLE + (value / 100) * (MAX_ANGLE - MIN_ANGLE);
@@ -39,7 +39,7 @@ export function ResultMap({ players }: Props) {
 
   return (
     <div className="result-map">
-      <svg className="result-map__svg" viewBox="0 0 320 200" aria-label="結果マップ" role="img">
+      <svg className="result-map__svg" viewBox="0 0 320 240" aria-label="結果マップ" role="img">
         <path className="result-map__arc-track" d={track} />
 
         {/* 0 / 50 / 100 ラベル */}

@@ -45,7 +45,7 @@ export function Lever({ value, onChange }: Props) {
   const dragging = useRef(false);
 
   const angleDeg = valueToAngle(value);
-  const knob = polarToCartesian(PIVOT_X, PIVOT_Y, LEVER_LENGTH, angleDeg + 90);
+  const knob = polarToCartesian(PIVOT_X, PIVOT_Y, LEVER_LENGTH, angleDeg);
 
   const computeAngleFromPointer = useCallback((clientX: number, clientY: number): number => {
     const svg = svgRef.current;
@@ -89,8 +89,8 @@ export function Lever({ value, onChange }: Props) {
     [value, onChange],
   );
 
-  const trackPath = arcPath(PIVOT_X, PIVOT_Y, LEVER_LENGTH, MIN_ANGLE + 90, MAX_ANGLE + 90);
-  const fillPath = arcPath(PIVOT_X, PIVOT_Y, LEVER_LENGTH, MIN_ANGLE + 90, angleDeg + 90);
+  const trackPath = arcPath(PIVOT_X, PIVOT_Y, LEVER_LENGTH, MIN_ANGLE, MAX_ANGLE);
+  const fillPath = arcPath(PIVOT_X, PIVOT_Y, LEVER_LENGTH, MIN_ANGLE, angleDeg);
 
   return (
     <div className="lever">
