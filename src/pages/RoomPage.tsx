@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Lever } from '../components/Lever';
 import { TopicEditor } from '../components/TopicEditor';
 import { useRoom } from '../hooks/useRoom';
 import type { PlayerInfo } from '../lib/types';
@@ -8,8 +10,9 @@ type Props = {
   player: PlayerInfo;
 };
 
-export function RoomPage({ roomId, player }: Props) {
+export function RoomPage({ roomId }: Props) {
   const roomState = useRoom(roomId);
+  const [leverValue, setLeverValue] = useState(50);
 
   if (roomState.status === 'loading') {
     return <div className="room-page room-page--loading">読み込み中…</div>;
@@ -28,7 +31,7 @@ export function RoomPage({ roomId, player }: Props) {
         <p>結果マップ（Task 9 で実装）</p>
       </section>
       <section className="room-page__lever">
-        <p>レバー（Task 8 で実装）／ {player.nickname}</p>
+        <Lever value={leverValue} onChange={setLeverValue} />
       </section>
     </div>
   );
