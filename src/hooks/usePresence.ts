@@ -32,9 +32,20 @@ export function usePresence(
   const selfRef = useRef(self);
   selfRef.current = self;
   const myKeyRef = useRef<string>(crypto.randomUUID());
-  // lever values from Broadcast, keyed by presenceKey
   const leverValuesRef = useRef<Map<string, number>>(new Map());
   const lastBroadcastRef = useRef<number>(0);
+
+  const buildPlayers = (): PresencePlayer[] => {
+    const channel = channelRef.current;
+    if (!channel) return [];
+    const raw = channel.presenceState<{ nickname: string; iconId: IconId }>();
+    return Object.entries(raw).map(([key, metas]) => ({
+      presenceKey: key,
+      nickname: metas[0].nickname,
+      iconId: metas[0].iconId,
+      value: leverValuesRef.current.get(key) ?? 50,
+    }));
+  };
 
   useEffect(() => {
     const myKey = myKeyRef.current;
@@ -45,16 +56,6 @@ export function usePresence(
     });
 
     channelRef.current = channel;
-
-    const buildPlayers = (): PresencePlayer[] => {
-      const raw = channel.presenceState<{ nickname: string; iconId: IconId }>();
-      return Object.entries(raw).map(([key, metas]) => ({
-        presenceKey: key,
-        nickname: metas[0].nickname,
-        iconId: metas[0].iconId,
-        value: leverValuesRef.current.get(key) ?? 50,
-      }));
-    };
 
     channel
       .on('presence', { event: 'sync' }, () => {
@@ -90,10 +91,14 @@ export function usePresence(
   }, [roomId]);
 
   const broadcastLever = (value: number) => {
+    leverValuesRef.current.set(myKeyRef.current, value);
+    setState((prev) =>
+      prev.status === 'joined' ? { status: 'joined', players: buildPlayers() } : prev,
+    );
+
     const now = Date.now();
     if (now - lastBroadcastRef.current < BROADCAST_THROTTLE_MS) return;
     lastBroadcastRef.current = now;
-    leverValuesRef.current.set(myKeyRef.current, value);
     channelRef.current?.send({
       type: 'broadcast',
       event: 'lever_update',
