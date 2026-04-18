@@ -29,7 +29,7 @@
 
 .lever__arc-track {
   fill: none;
-  stroke: var(--border);
+  stroke: rgba(255, 255, 255, 0.15);
   stroke-width: 6;
   stroke-linecap: round;
 }
@@ -43,13 +43,13 @@
 }
 
 .lever__stick {
-  stroke: var(--text);
+  stroke: rgba(255, 255, 255, 0.85);
   stroke-width: 6;
   stroke-linecap: round;
 }
 
 .lever__pivot {
-  fill: var(--text);
+  fill: rgba(255, 255, 255, 0.7);
 }
 
 .lever__knob {
