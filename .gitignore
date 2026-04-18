@@ -143,6 +143,10 @@ vite.config.ts.timestamp-*
 dist-ssr
 *.local
 
+# Playwright
+test-results/
+playwright-report/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
