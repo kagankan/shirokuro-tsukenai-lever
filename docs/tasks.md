@@ -87,8 +87,8 @@
 
 依存: 全タスク完了後
 
-- [ ] 12-1. GitHub Pages 用のビルド設定（vite.config.ts の base 設定）
-- [ ] 12-2. GitHub Actions ワークフロー作成（pnpm build → deploy）
+- [x] 12-1. GitHub Pages 用のビルド設定（vite.config.ts の base 設定）
+- [x] 12-2. GitHub Actions ワークフロー作成（pnpm build → deploy）
 
 ---
 
