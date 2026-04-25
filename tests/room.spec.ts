@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 const BASE_URL = 'http://localhost:5176/shirokuro-tsukenai-lever';
 
 // Supabase Realtime の接続待機タイムアウト
-const REALTIME_TIMEOUT = 20_000;
+const REALTIME_TIMEOUT = 30_000;
 
 /**
  * 参加画面でニックネームとアイコンを入力してルームに入る
