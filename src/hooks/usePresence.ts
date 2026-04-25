@@ -59,14 +59,11 @@ export function usePresence(
     // If a cleanup timer is pending, this is a StrictMode remount — cancel the
     // removal and keep the existing channel alive rather than creating a new one,
     // which would trigger a slow TIMED_OUT→TIMED_OUT→SUBSCRIBED cycle.
-    console.log('[Presence] effect start, timer pending:', channelCleanupTimerRef.current !== null, 'roomId:', roomId);
     if (channelCleanupTimerRef.current !== null) {
-      console.log('[Presence] StrictMode remount detected - reusing channel');
       clearTimeout(channelCleanupTimerRef.current);
       channelCleanupTimerRef.current = null;
       return () => {
         const ch = channelRef.current;
-        console.log('[Presence] real unmount cleanup, channel state:', ch?.state);
         if (ch) supabase.removeChannel(ch);
       };
     }
@@ -80,7 +77,6 @@ export function usePresence(
     channel
       .on('presence', { event: 'sync' }, () => {
         const players = buildPlayers();
-        console.log('[Presence] sync, players:', players.map(p => p.nickname));
         setState((prev) =>
           prev.status === 'full' ? prev : { status: 'joined', players },
         );
@@ -92,7 +88,6 @@ export function usePresence(
         );
       })
       .subscribe(async (status) => {
-        console.log('[Presence] subscribe status:', status);
         if (status !== 'SUBSCRIBED') return;
 
         const currentCount = Object.keys(channel.presenceState()).length;
@@ -102,11 +97,10 @@ export function usePresence(
           return;
         }
 
-        const trackResult = await channel.track({
+        await channel.track({
           nickname: selfRef.current.nickname,
           iconId: selfRef.current.iconId,
         });
-        console.log('[Presence] track result:', trackResult, 'nickname:', selfRef.current.nickname);
       });
 
     return () => {
@@ -115,10 +109,8 @@ export function usePresence(
         broadcastTimerRef.current = null;
       }
       // Delay removal by one tick so StrictMode's immediate remount can cancel it.
-      console.log('[Presence] cleanup: scheduling channel removal with 100ms delay');
       const ch = channel;
       channelCleanupTimerRef.current = setTimeout(() => {
-        console.log('[Presence] timer fired: removing channel');
         channelCleanupTimerRef.current = null;
         supabase.removeChannel(ch);
       }, 100);
