@@ -81,6 +81,18 @@ export function usePresence(
           prev.status === 'full' ? prev : { status: 'joined', players },
         );
       })
+      .on('presence', { event: 'join' }, ({ key }) => {
+        // 他人が新たに入室したら、自分の現在値を broadcast し直す。
+        // Broadcast は履歴を残さないため、後発参加者が既存メンバーの最新値を
+        // 知るには、誰かが再送信する必要がある。
+        if (key === myKeyRef.current) return;
+        const myValue = leverValuesRef.current.get(myKeyRef.current) ?? 50;
+        channelRef.current?.send({
+          type: 'broadcast',
+          event: 'lever_update',
+          payload: { presenceKey: myKeyRef.current, value: myValue } satisfies LeverPayload,
+        });
+      })
       .on('broadcast', { event: 'lever_update' }, ({ payload }: { payload: LeverPayload }) => {
         leverValuesRef.current.set(payload.presenceKey, payload.value);
         setState((prev) =>

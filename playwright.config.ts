@@ -3,6 +3,8 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   timeout: 60_000,
+  // Supabase Realtime のジッターでテストが時々詰まるため、自動リトライで吸収する。
+  retries: 2,
   use: {
     baseURL: 'http://localhost:5176/shirokuro-tsukenai-lever',
     headless: true,

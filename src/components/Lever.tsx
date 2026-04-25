@@ -8,6 +8,7 @@ const PIVOT_X = 110;
 const PIVOT_Y = 130;
 const SVG_WIDTH = 220;
 const SVG_HEIGHT = 150;
+const KEY_STEP = 5;
 
 function valueToAngle(value: number): number {
   return MIN_ANGLE + (value / 100) * (MAX_ANGLE - MIN_ANGLE);
@@ -83,8 +84,8 @@ export function Lever({ value, onChange }: Props) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') onChange(Math.max(0, value - 1));
-      else if (e.key === 'ArrowRight') onChange(Math.min(100, value + 1));
+      if (e.key === 'ArrowLeft') onChange(Math.max(0, value - KEY_STEP));
+      else if (e.key === 'ArrowRight') onChange(Math.min(100, value + KEY_STEP));
     },
     [value, onChange],
   );
