@@ -4,57 +4,77 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px 24px;
 }
 
-.result-map__svg {
+/* viewBox 200x150 の SVG と一致させるために 4:3 アスペクト */
+.result-map__stage {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 2 / 1;
+}
+
+.result-map__arch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   overflow: visible;
-  max-width: 100%;
 }
 
-.result-map__arc-track {
+.result-map__arch-track {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.18);
-  stroke-width: 5;
+  stroke: url(#result-map-arc);
+  stroke-width: 14;
   stroke-linecap: round;
+  /* preserveAspectRatio="none" でも線幅が歪まないように */
+  vector-effect: non-scaling-stroke;
 }
 
-.result-map__label-value {
-  font-size: 13px;
-  fill: var(--text-muted);
-  text-anchor: middle;
-  dominant-baseline: middle;
-  font-family: system-ui, sans-serif;
-  font-weight: 600;
-}
-
-.result-map__label-edge {
+.result-map__edge {
+  position: absolute;
   font-size: 12px;
-  fill: var(--text-muted);
-  dominant-baseline: middle;
-  font-family: system-ui, sans-serif;
   font-weight: 600;
+  color: var(--text-muted);
+  transform: translate(-50%, 18px);
+  pointer-events: none;
 }
 
-.result-map__player-emoji {
-  font-size: 30px;
-  text-anchor: middle;
-  dominant-baseline: middle;
-  font-family: system-ui, sans-serif;
-}
-
-.result-map__player-nickname {
-  font-size: 11px;
-  fill: var(--text);
-  text-anchor: middle;
-  dominant-baseline: middle;
-  font-family: system-ui, sans-serif;
+.result-map__player {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .result-map__player-value {
   font-size: 13px;
-  fill: var(--accent);
-  text-anchor: middle;
-  dominant-baseline: middle;
-  font-family: system-ui, sans-serif;
   font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.result-map__player-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0e0f14;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.result-map__player-nickname {
+  font-size: 11px;
+  color: var(--text);
+  margin-top: 4px;
+  line-height: 1;
 }

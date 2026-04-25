@@ -2,25 +2,24 @@ import type { IconId } from '../lib/icons';
 import { ICON_PRESETS } from '../lib/icons';
 import './ResultMap.css';
 
-const CX = 160;
-const CY = 165;
-const RADIUS = 135;
-const MIN_ANGLE = -120; // degrees from top (value=0 → lower-left)
-const MAX_ANGLE = 120; // degrees from top (value=100 → lower-right)
+const MIN_ANGLE = -90;
+const MAX_ANGLE = 90;
+const RANGE = MAX_ANGLE - MIN_ANGLE;
 
-function valueToPoint(value: number): { x: number; y: number } {
-  const angleDeg = MIN_ANGLE + (value / 100) * (MAX_ANGLE - MIN_ANGLE);
+// 支点(50%, 100%)から半径 50%(横)/ 100%(縦) で配置すると
+// viewBox 200x100 (アスペクト比 2:1) の半円アーチと座標が一致する
+const PIVOT_X_PCT = 50;
+const PIVOT_Y_PCT = 100;
+const RX_PCT = 50;
+const RY_PCT = 100;
+
+function valueToPercent(value: number): { left: number; top: number } {
+  const angleDeg = MIN_ANGLE + (value / 100) * RANGE;
   const rad = (angleDeg * Math.PI) / 180;
   return {
-    x: CX + RADIUS * Math.sin(rad),
-    y: CY + RADIUS * -Math.cos(rad),
+    left: PIVOT_X_PCT + RX_PCT * Math.sin(rad),
+    top: PIVOT_Y_PCT - RY_PCT * Math.cos(rad),
   };
-}
-
-function arcPath(): string {
-  const start = valueToPoint(0);
-  const end = valueToPoint(100);
-  return `M ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 0 1 ${end.x} ${end.y}`;
 }
 
 export type PlayerSlot = {
@@ -35,55 +34,54 @@ type Props = {
 };
 
 export function ResultMap({ players }: Props) {
-  const track = arcPath();
+  const zero = valueToPercent(0);
+  const hundred = valueToPercent(100);
 
   return (
     <div className="result-map">
-      <svg className="result-map__svg" viewBox="0 0 320 240" aria-label="結果マップ" role="img">
-        <path className="result-map__arc-track" d={track} />
+      <div className="result-map__stage">
+        <svg
+          className="result-map__arch"
+          viewBox="0 0 200 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="result-map-arc" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#5fd6e0" />
+              <stop offset="50%" stopColor="#e8e8f5" />
+              <stop offset="100%" stopColor="#a87cfb" />
+            </linearGradient>
+          </defs>
+          <path className="result-map__arch-track" d="M 0 100 A 100 100 0 0 1 200 100" />
+        </svg>
 
-        {/* 0 / 50 / 100 ラベル */}
-        <text
-          className="result-map__label-edge"
-          x={valueToPoint(0).x - 8}
-          y={valueToPoint(0).y}
-          textAnchor="end"
-        >
+        <div className="result-map__edge" style={{ left: `${zero.left}%`, top: `${zero.top}%` }}>
           0
-        </text>
-        <text
-          className="result-map__label-value"
-          x={valueToPoint(50).x}
-          y={valueToPoint(50).y - 16}
-        >
-          50
-        </text>
-        <text
-          className="result-map__label-edge"
-          x={valueToPoint(100).x + 8}
-          y={valueToPoint(100).y}
+        </div>
+        <div
+          className="result-map__edge"
+          style={{ left: `${hundred.left}%`, top: `${hundred.top}%` }}
         >
           100
-        </text>
+        </div>
 
         {players.map((p) => {
-          const pos = valueToPoint(p.value);
+          const { left, top } = valueToPercent(p.value);
           const emoji = ICON_PRESETS.find((i) => i.id === p.iconId)?.emoji ?? '❓';
           return (
-            <g key={p.id} transform={`translate(${pos.x}, ${pos.y})`}>
-              <text className="result-map__player-emoji" y={-28}>
-                {emoji}
-              </text>
-              <text className="result-map__player-nickname" y={-8}>
-                {p.nickname}
-              </text>
-              <text className="result-map__player-value" y={8}>
-                {p.value}
-              </text>
-            </g>
+            <div
+              key={p.id}
+              className="result-map__player"
+              style={{ left: `${left}%`, top: `${top}%` }}
+            >
+              <div className="result-map__player-value">{p.value}</div>
+              <div className="result-map__player-icon">{emoji}</div>
+              <div className="result-map__player-nickname">{p.nickname}</div>
+            </div>
           );
         })}
-      </svg>
+      </div>
     </div>
   );
 }

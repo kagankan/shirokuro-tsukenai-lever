@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Lever } from '../components/Lever';
+import { LeverIcon } from '../components/LeverIcon';
 import type { PlayerSlot } from '../components/ResultMap';
 import { ResultMap } from '../components/ResultMap';
 import { TopicEditor } from '../components/TopicEditor';
@@ -53,6 +54,7 @@ export function RoomPage({ roomId, player }: Props) {
   return (
     <div className="room-page">
       <section className="room-page__topic">
+        <LeverIcon className="room-page__topic-icon" size={40} />
         <TopicEditor roomId={roomId} initialTopic={roomState.room.topic} />
       </section>
       <section className="room-page__map">

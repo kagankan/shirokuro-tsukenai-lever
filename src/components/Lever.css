@@ -18,40 +18,96 @@
   font-variant-numeric: tabular-nums;
 }
 
-.lever__svg {
+/* レバー全体の舞台。280x200 の論理座標系で内部要素を配置する */
+.lever__stage {
+  position: relative;
+  width: 280px;
+  height: 200px;
+  max-width: 100%;
   cursor: grab;
-  overflow: visible;
 }
-
-.lever__svg:active {
+.lever__stage:active {
   cursor: grabbing;
 }
 
-.lever__arc-track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.15);
-  stroke-width: 6;
-  stroke-linecap: round;
+/* 黒の筐体（外箱） */
+.lever__case {
+  position: absolute;
+  left: 15px;
+  top: 110px;
+  width: 250px;
+  height: 85px;
+  border-radius: 16px;
+  background: #050608;
 }
 
-.lever__arc-fill {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 6;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.05s linear;
+/* U字パーツ共通 */
+.lever__ring {
+  position: absolute;
+  /* 上だけ半円（border-radius を半径と同じにし、width = 2*半径 にすると完全な半円になる） */
 }
 
-.lever__stick {
-  stroke: rgba(255, 255, 255, 0.85);
-  stroke-width: 6;
-  stroke-linecap: round;
+/* 青のU字（外）: 半径70、支点(140,145)中心 */
+.lever__ring--outer {
+  left: 70px; /* 140 - 70 */
+  top: 75px; /* 145 - 70 */
+  width: 140px; /* 2 * 70 */
+  height: 120px; /* 上半円(70px) + 縦の直線部(50px) = 案bottom(195) - top(75) */
+  border-radius: 70px 70px 0 0;
+  background: #3aa8c8;
 }
 
+/* 紫のU字（内）: 半径42 */
+.lever__ring--inner {
+  left: 98px; /* 140 - 42 */
+  top: 103px; /* 145 - 42 */
+  width: 84px;
+  height: 92px;
+  border-radius: 42px 42px 0 0;
+  background: #a855f7;
+}
+
+/* 支点（小さな黒丸） */
 .lever__pivot {
-  fill: rgba(255, 255, 255, 0.7);
+  position: absolute;
+  left: 135px; /* 140 - 5 */
+  top: 140px; /* 145 - 5 */
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #050608;
+  z-index: 2;
 }
 
-.lever__knob {
-  fill: var(--accent);
+/* レバーアーム: pivot を原点とする 0サイズのアンカー。回転中心 = transform-origin: 0 0 */
+.lever__arm {
+  position: absolute;
+  left: 140px;
+  top: 145px;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  z-index: 3;
+}
+
+/* 青の棒（pivot から上に 110px 伸びる） */
+.lever__stick {
+  position: absolute;
+  left: -6px; /* 太さ12px の半分 */
+  top: -110px; /* レバー長 */
+  width: 12px;
+  height: 110px;
+  background: #3aa8c8;
+  border-radius: 6px;
+}
+
+/* 黒の横バー（ハンドル）。棒の先端に乗る形 */
+.lever__handle {
+  position: absolute;
+  left: -22px;
+  top: -117px; /* 棒の先端(=-110)から 7px上を中心にする */
+  width: 44px;
+  height: 14px;
+  border-radius: 3px;
+  background: #050608;
 }

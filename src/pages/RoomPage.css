@@ -13,6 +13,14 @@
   flex-shrink: 0;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.room-page__topic-icon {
+  flex-shrink: 0;
+  color: var(--accent);
 }
 
 /* ── 結果マップ（中央・残り全高）────────── */
