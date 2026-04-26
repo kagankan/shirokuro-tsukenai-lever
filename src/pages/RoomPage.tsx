@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { css } from '../../styled-system/css';
 import { Lever } from '../components/Lever';
 import { LeverIcon } from '../components/LeverIcon';
 import type { PlayerSlot } from '../components/ResultMap';
@@ -7,12 +8,62 @@ import { TopicEditor } from '../components/TopicEditor';
 import { usePresence } from '../hooks/usePresence';
 import { useRoom } from '../hooks/useRoom';
 import type { PlayerInfo } from '../lib/types';
-import './RoomPage.css';
 
 type Props = {
   roomId: string;
   player: PlayerInfo;
 };
+
+const pageClass = css({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: 0,
+});
+
+const topicSectionClass = css({
+  paddingY: '3.5',
+  paddingX: '5',
+  flexShrink: 0,
+  background: 'surface',
+  borderBottom: '1px solid token(colors.border)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '3',
+});
+
+const topicIconClass = css({
+  flexShrink: 0,
+  color: 'accent',
+});
+
+const mapSectionClass = css({
+  flex: 1,
+  minHeight: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingY: '3',
+  paddingX: '4',
+});
+
+const leverSectionClass = css({
+  flexShrink: 0,
+  borderTop: '1px solid token(colors.border)',
+  background: 'surface',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
+const stateMessageClass = css({
+  flex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '4',
+  color: 'textMuted',
+});
 
 export function RoomPage({ roomId, player }: Props) {
   const roomState = useRoom(roomId);
@@ -30,15 +81,15 @@ export function RoomPage({ roomId, player }: Props) {
   };
 
   if (roomState.status === 'loading') {
-    return <div className="room-page room-page--loading">読み込み中…</div>;
+    return <div className={stateMessageClass}>読み込み中…</div>;
   }
 
   if (roomState.status === 'error') {
-    return <div className="room-page room-page--error">{roomState.message}</div>;
+    return <div className={stateMessageClass}>{roomState.message}</div>;
   }
 
   if (presenceState.status === 'full') {
-    return <div className="room-page room-page--error">このルームは満員です（最大8名）</div>;
+    return <div className={stateMessageClass}>このルームは満員です（最大8名）</div>;
   }
 
   const players: PlayerSlot[] =
@@ -52,15 +103,15 @@ export function RoomPage({ roomId, player }: Props) {
       : [{ id: 'me', nickname: player.nickname, iconId: player.iconId, value: leverValue }];
 
   return (
-    <div className="room-page">
-      <section className="room-page__topic">
-        <LeverIcon className="room-page__topic-icon" size={40} />
+    <div className={pageClass}>
+      <section className={topicSectionClass}>
+        <LeverIcon className={topicIconClass} size={40} />
         <TopicEditor roomId={roomId} initialTopic={roomState.room.topic} />
       </section>
-      <section className="room-page__map">
+      <section className={mapSectionClass}>
         <ResultMap players={players} />
       </section>
-      <section className="room-page__lever">
+      <section className={leverSectionClass}>
         <Lever value={leverValue} onChange={handleLeverChange} />
       </section>
     </div>

@@ -1,51 +1,56 @@
-:root {
-  --text: #f0f0f5;
-  --text-muted: #8b8ba7;
-  --bg: #0e0f14;
-  --surface: #17181f;
-  --border: #2a2a3c;
-  --accent: #c084fc;
-  --accent-text: #0e0f14;
+/* Panda CSS のレイヤ順序を宣言。 reset (preflight) → base (このファイルの規定) → tokens → recipes → utilities */
+@layer reset, base, tokens, recipes, utilities;
 
-  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+@layer base {
+  :root {
+    --text: #f0f0f5;
+    --text-muted: #8b8ba7;
+    --bg: #0e0f14;
+    --surface: #17181f;
+    --border: #2a2a3c;
+    --accent: #c084fc;
+    --accent-text: #0e0f14;
 
-  color-scheme: dark;
-  font: 16px / 1.5 var(--sans);
-  color: var(--text);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+    --sans: system-ui, "Segoe UI", Roboto, sans-serif;
 
-* {
-  box-sizing: border-box;
-}
+    color-scheme: dark;
+    font: 16px / 1.5 var(--sans);
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-body {
-  margin: 0;
-}
+  * {
+    box-sizing: border-box;
+  }
 
-#root {
-  max-width: 480px;
-  min-height: 100svh;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-}
+  body {
+    margin: 0;
+  }
 
-h1,
-h2 {
-  margin: 0;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
+  #root {
+    max-width: 480px;
+    min-height: 100svh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
 
-p {
-  margin: 0;
-}
+  h1,
+  h2 {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
 
-button {
-  font: inherit;
-  cursor: pointer;
+  p {
+    margin: 0;
+  }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+  }
 }

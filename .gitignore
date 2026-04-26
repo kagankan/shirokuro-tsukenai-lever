@@ -157,3 +157,7 @@ playwright-report/
 *.njsproj
 *.sln
 *.sw?
+
+## Panda
+styled-system
+styled-system-studio

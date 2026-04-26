@@ -77,9 +77,7 @@ export function usePresence(
     channel
       .on('presence', { event: 'sync' }, () => {
         const players = buildPlayers();
-        setState((prev) =>
-          prev.status === 'full' ? prev : { status: 'joined', players },
-        );
+        setState((prev) => (prev.status === 'full' ? prev : { status: 'joined', players }));
       })
       .on('presence', { event: 'join' }, ({ key }) => {
         // 他人が新たに入室したら、自分の現在値を broadcast し直す。

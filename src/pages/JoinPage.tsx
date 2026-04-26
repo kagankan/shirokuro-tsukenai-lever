@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { css } from '../../styled-system/css';
 import { DEFAULT_ICON, ICON_PRESETS } from '../lib/icons';
 import type { PlayerInfo } from '../lib/types';
-import './JoinPage.css';
 
 type Props = {
   onJoin: (player: PlayerInfo) => void;
@@ -18,43 +18,116 @@ export function JoinPage({ onJoin }: Props) {
   };
 
   return (
-    <main className="join-page">
-      <h1 className="join-page__title">ルームに参加</h1>
-      <form className="join-page__form" onSubmit={handleSubmit}>
-        <div className="join-page__field">
-          <label className="join-page__label" htmlFor="nickname">
+    <main
+      className={css({
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8',
+      })}
+    >
+      <h1 className={css({ fontSize: '1.375rem', textAlign: 'center' })}>ルームに参加</h1>
+      <form
+        onSubmit={handleSubmit}
+        className={css({ width: '100%', display: 'flex', flexDirection: 'column', gap: '6' })}
+      >
+        <div className={css({ display: 'flex', flexDirection: 'column', gap: '2' })}>
+          <label
+            htmlFor="nickname"
+            className={css({ fontSize: 'sm', fontWeight: 600, color: 'textMuted' })}
+          >
             ニックネーム
           </label>
           <input
             id="nickname"
             type="text"
-            className="join-page__input"
             placeholder="例: たろう"
             maxLength={20}
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             // biome-ignore lint/a11y/noAutofocus: 参加フォームの入力開始UX改善
             autoFocus
+            className={css({
+              font: 'inherit',
+              fontSize: 'md',
+              paddingY: '3',
+              paddingX: '3.5',
+              border: '1.5px solid token(colors.border)',
+              borderRadius: '10px',
+              background: 'bg',
+              color: 'text',
+              outline: 'none',
+              transition: 'border-color 0.15s ease',
+              _focus: { borderColor: 'accent' },
+            })}
           />
         </div>
-        <fieldset className="join-page__field join-page__field--icon">
-          <legend className="join-page__label">アイコン</legend>
-          <div className="join-page__icon-grid">
+        <fieldset
+          className={css({
+            border: 'none',
+            padding: 0,
+            margin: 0,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '2',
+          })}
+        >
+          <legend className={css({ fontSize: 'sm', fontWeight: 600, color: 'textMuted' })}>
+            アイコン
+          </legend>
+          <div
+            className={css({
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '2.5',
+            })}
+          >
             {ICON_PRESETS.map((icon) => (
               <button
                 key={icon.id}
                 type="button"
-                className="join-page__icon-button"
                 aria-pressed={iconId === icon.id}
                 aria-label={icon.id}
                 onClick={() => setIconId(icon.id)}
+                className={css({
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '2rem',
+                  padding: '2.5',
+                  border: '2px solid token(colors.border)',
+                  borderRadius: '12px',
+                  background: 'surface',
+                  transition: 'border-color 0.15s ease, background 0.15s ease',
+                  _pressed: { borderColor: 'accent', background: 'bg' },
+                })}
               >
                 {icon.emoji}
               </button>
             ))}
           </div>
         </fieldset>
-        <button type="submit" className="join-page__submit-button" disabled={!nickname.trim()}>
+        <button
+          type="submit"
+          disabled={!nickname.trim()}
+          className={css({
+            padding: '3.5',
+            border: 'none',
+            borderRadius: '999px',
+            background: 'accent',
+            color: 'accentText',
+            fontSize: 'md',
+            fontWeight: 600,
+            letterSpacing: '0.02em',
+            transition: 'filter 0.15s ease',
+            _hover: { _enabled: { filter: 'brightness(1.08)' } },
+            _active: { _enabled: { filter: 'brightness(0.95)' } },
+            _disabled: { filter: 'grayscale(0.4) opacity(0.6)', cursor: 'not-allowed' },
+          })}
+        >
           参加する
         </button>
       </form>

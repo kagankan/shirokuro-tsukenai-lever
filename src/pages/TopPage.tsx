@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { css } from '../../styled-system/css';
 import { supabase } from '../lib/supabase';
-import './TopPage.css';
 
 type Props = {
   onCreated: (roomId: string) => void;
@@ -31,20 +31,44 @@ export function TopPage({ onCreated }: Props) {
   };
 
   return (
-    <main className="top-page">
-      <h1 className="top-page__title">白黒つけないレバー</h1>
-      <p className="top-page__lead">
+    <main
+      className={css({
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8',
+        textAlign: 'center',
+      })}
+    >
+      <h1 className={css({ fontSize: '2rem', lineHeight: 1.2 })}>白黒つけないレバー</h1>
+      <p className={css({ color: 'textMuted', maxWidth: '24em' })}>
         お題に対して、みんながレバーで意見を表明するリアルタイム参加型ツール
       </p>
       <button
         type="button"
-        className="top-page__create-button"
         onClick={handleCreateRoom}
         disabled={loading}
+        className={css({
+          paddingY: '3.5',
+          paddingX: '8',
+          border: 'none',
+          borderRadius: '999px',
+          background: 'accent',
+          color: 'accentText',
+          fontSize: 'md',
+          fontWeight: 600,
+          letterSpacing: '0.02em',
+          transition: 'filter 0.15s ease',
+          _hover: { filter: 'brightness(1.08)' },
+          _active: { filter: 'brightness(0.95)' },
+          _disabled: { filter: 'grayscale(0.4) opacity(0.6)', cursor: 'not-allowed' },
+        })}
       >
         {loading ? '作成中…' : 'ルームを作成'}
       </button>
-      {error && <p className="top-page__error">{error}</p>}
+      {error && <p className={css({ color: '#e53935', fontSize: 'sm' })}>{error}</p>}
     </main>
   );
 }
