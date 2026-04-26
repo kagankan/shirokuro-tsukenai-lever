@@ -1,24 +1,31 @@
-import type { IconId } from '../lib/icons';
-import { ICON_PRESETS } from '../lib/icons';
-import './ResultMap.css';
+import type { IconId } from "../lib/icons";
+import { ICON_PRESETS } from "../lib/icons";
+import "./ResultMap.css";
 
-const MIN_ANGLE = -90;
-const MAX_ANGLE = 90;
+// バームクーヘンの 90° スライス相当の見た目で ±45° 表示。
+// アーチが container を端から端まで埋めるよう、
+// 90°円弧の自然bbox(chord:sagitta = 2sin45° : 1-cos45° ≈ 4.83:1) を viewBox に採用し、
+// preserveAspectRatio="none" でコンテナへ引き伸ばす。
+const MIN_ANGLE = -50;
+const MAX_ANGLE = 50;
 const RANGE = MAX_ANGLE - MIN_ANGLE;
+const HALF_RANGE_RAD = (MAX_ANGLE * Math.PI) / 180;
 
-// 支点(50%, 100%)から半径 50%(横)/ 100%(縦) で配置すると
-// viewBox 200x100 (アスペクト比 2:1) の半円アーチと座標が一致する
+// 引き伸ばし後の座標で各端点が container の角に来るよう、半径(%)を調整する。
+// value=50 → top:0%、value=0/100 → top:100% を満たすには
+// RY_PCT = 100 / (1 - cos45°) ≈ 341.42。
+// 同じ理由で水平方向は RX_PCT = 50 / sin45° ≈ 70.71。
 const PIVOT_X_PCT = 50;
-const PIVOT_Y_PCT = 100;
-const RX_PCT = 50;
-const RY_PCT = 100;
+const RX_PCT = 50 / Math.sin(HALF_RANGE_RAD);
+const PIVOT_Y_PCT = 100 / (1 - Math.cos(HALF_RANGE_RAD));
+const RY_PCT = PIVOT_Y_PCT;
 
 function valueToPercent(value: number): { left: number; top: number } {
   const angleDeg = MIN_ANGLE + (value / 100) * RANGE;
   const rad = (angleDeg * Math.PI) / 180;
   return {
-    left: PIVOT_X_PCT + RX_PCT * Math.sin(rad),
-    top: PIVOT_Y_PCT - RY_PCT * Math.cos(rad),
+    left: PIVOT_X_PCT + Math.sin(rad),
+    top: PIVOT_Y_PCT - Math.cos(rad),
   };
 }
 
@@ -40,23 +47,14 @@ export function ResultMap({ players }: Props) {
   return (
     <div className="result-map">
       <div className="result-map__stage">
-        <svg
-          className="result-map__arch"
-          viewBox="0 0 200 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="result-map-arc" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#5fd6e0" />
-              <stop offset="50%" stopColor="#e8e8f5" />
-              <stop offset="100%" stopColor="#a87cfb" />
-            </linearGradient>
-          </defs>
-          <path className="result-map__arch-track" d="M 0 100 A 100 100 0 0 1 200 100" />
-        </svg>
+        <div className="result-map__arch">
+          <div className="result-map__arc" />
+        </div>
 
-        <div className="result-map__edge" style={{ left: `${zero.left}%`, top: `${zero.top}%` }}>
+        <div
+          className="result-map__edge"
+          style={{ left: `${zero.left}%`, top: `${zero.top}%` }}
+        >
           0
         </div>
         <div
@@ -68,7 +66,8 @@ export function ResultMap({ players }: Props) {
 
         {players.map((p) => {
           const { left, top } = valueToPercent(p.value);
-          const emoji = ICON_PRESETS.find((i) => i.id === p.iconId)?.emoji ?? '❓';
+          const emoji =
+            ICON_PRESETS.find((i) => i.id === p.iconId)?.emoji ?? "❓";
           return (
             <div
               key={p.id}
