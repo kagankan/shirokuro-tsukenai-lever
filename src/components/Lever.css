@@ -1,12 +1,17 @@
 .lever {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1.4;
+  isolation: isolate; /* 子要素の z-index を親要素内で完結させる */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   user-select: none;
   touch-action: none;
+
+  --lever-blue: rgb(43 158 218);
+  --lever-purple: rgb(87 62 157);
+  --lever-black: rgb(5 6 8);
 }
 
 .lever__value {
@@ -21,9 +26,8 @@
 /* レバー全体の舞台。280x200 の論理座標系で内部要素を配置する */
 .lever__stage {
   position: relative;
-  width: 280px;
-  height: 200px;
-  max-width: 100%;
+  width: 100%;
+  height: 350px;
   cursor: grab;
 }
 .lever__stage:active {
@@ -33,81 +37,77 @@
 /* 黒の筐体（外箱） */
 .lever__case {
   position: absolute;
-  left: 15px;
-  top: 110px;
-  width: 250px;
-  height: 85px;
-  border-radius: 16px;
-  background: #050608;
+  inset: 0;
+  margin-top: auto;
+  margin-inline: auto;
+  width: 50%;
+  aspect-ratio: 1.2; 
+  border-radius: 9999px 9999px 0 0 ;
+  padding: 2rem 2rem 1rem 2rem;
+  background: var(--lever-black);
 }
 
-/* U字パーツ共通 */
-.lever__ring {
-  position: absolute;
-  /* 上だけ半円（border-radius を半径と同じにし、width = 2*半径 にすると完全な半円になる） */
-}
 
-/* 青のU字（外）: 半径70、支点(140,145)中心 */
+/* 青のU字（外） */
 .lever__ring--outer {
-  left: 70px; /* 140 - 70 */
-  top: 75px; /* 145 - 70 */
-  width: 140px; /* 2 * 70 */
-  height: 120px; /* 上半円(70px) + 縦の直線部(50px) = 案bottom(195) - top(75) */
-  border-radius: 70px 70px 0 0;
-  background: #3aa8c8;
+  width: 100%;
+  height: 100%;
+  padding: 3rem 3rem 0 3rem;
+  border-radius: 9999px 9999px 0 0;
+  background: var(--lever-blue);
 }
 
 /* 紫のU字（内）: 半径42 */
 .lever__ring--inner {
-  left: 98px; /* 140 - 42 */
-  top: 103px; /* 145 - 42 */
-  width: 84px;
-  height: 92px;
-  border-radius: 42px 42px 0 0;
-  background: #a855f7;
-}
-
-/* 支点（小さな黒丸） */
-.lever__pivot {
-  position: absolute;
-  left: 135px; /* 140 - 5 */
-  top: 140px; /* 145 - 5 */
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #050608;
-  z-index: 2;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px 9999px 0 0;
+  background: var(--lever-purple);
 }
 
 /* レバーアーム: pivot を原点とする 0サイズのアンカー。回転中心 = transform-origin: 0 0 */
 .lever__arm {
   position: absolute;
-  left: 140px;
-  top: 145px;
-  width: 0;
-  height: 0;
-  transform-origin: 0 0;
-  z-index: 3;
+  top:0;
+  left: 0;
+  right: 0;
+
+  transform-origin: 50% 100%;
+  width: fit-content;
+  margin: auto;
+  margin-top: 1rem;
+  z-index: -1;
 }
 
-/* 青の棒（pivot から上に 110px 伸びる） */
-.lever__stick {
-  position: absolute;
-  left: -6px; /* 太さ12px の半分 */
-  top: -110px; /* レバー長 */
-  width: 12px;
-  height: 110px;
-  background: #3aa8c8;
-  border-radius: 6px;
-}
-
-/* 黒の横バー（ハンドル）。棒の先端に乗る形 */
+/* ハンドル。棒の先端に乗る形 */
 .lever__handle {
-  position: absolute;
-  left: -22px;
-  top: -117px; /* 棒の先端(=-110)から 7px上を中心にする */
-  width: 44px;
-  height: 14px;
-  border-radius: 3px;
-  background: #050608;
+      position: absolute;
+  left: -9999%;
+  right: -9999%;
+  top: 0;
+
+  margin: auto;
+  padding: 8px;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  background: var(--lever-blue);
+
+  &::before {
+    content: "";
+    display: block;
+    border-radius: 9999px;
+    width: 100%;
+    height: 100%;
+    background: #050608;
+  }
+}
+/* 青の棒 */
+.lever__stick {
+  margin: auto;
+  padding-top: 1rem;
+  width: 1.5rem;
+  height: 280px;
+  background: var(--lever-blue);
+  border-radius: 9999px;
 }

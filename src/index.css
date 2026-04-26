@@ -29,7 +29,6 @@ body {
   max-width: 480px;
   min-height: 100svh;
   margin: 0 auto;
-  padding: 24px 20px;
   display: flex;
   flex-direction: column;
 }

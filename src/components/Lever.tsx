@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react';
-import './Lever.css';
+import { useCallback, useRef } from "react";
+import "./Lever.css";
 
 const MIN_ANGLE = -60; // value=0
 const MAX_ANGLE = 60; // value=100
@@ -31,17 +31,20 @@ export function Lever({ value, onChange }: Props) {
 
   const angleDeg = valueToAngle(value);
 
-  const computeAngleFromPointer = useCallback((clientX: number, clientY: number): number => {
-    const stage = stageRef.current;
-    if (!stage) return 0;
-    const rect = stage.getBoundingClientRect();
-    // 実描画サイズと論理サイズが違ってもよいよう、スケールを掛ける
-    const scaleX = STAGE_W / rect.width;
-    const scaleY = STAGE_H / rect.height;
-    const dx = (clientX - rect.left) * scaleX - PIVOT_X;
-    const dy = (clientY - rect.top) * scaleY - PIVOT_Y;
-    return (Math.atan2(dx, -dy) * 180) / Math.PI;
-  }, []);
+  const computeAngleFromPointer = useCallback(
+    (clientX: number, clientY: number): number => {
+      const stage = stageRef.current;
+      if (!stage) return 0;
+      const rect = stage.getBoundingClientRect();
+      // 実描画サイズと論理サイズが違ってもよいよう、スケールを掛ける
+      const scaleX = STAGE_W / rect.width;
+      const scaleY = STAGE_H / rect.height;
+      const dx = (clientX - rect.left) * scaleX - PIVOT_X;
+      const dy = (clientY - rect.top) * scaleY - PIVOT_Y;
+      return (Math.atan2(dx, -dy) * 180) / Math.PI;
+    },
+    [],
+  );
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -68,8 +71,9 @@ export function Lever({ value, onChange }: Props) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') onChange(Math.max(0, value - KEY_STEP));
-      else if (e.key === 'ArrowRight') onChange(Math.min(100, value + KEY_STEP));
+      if (e.key === "ArrowLeft") onChange(Math.max(0, value - KEY_STEP));
+      else if (e.key === "ArrowRight")
+        onChange(Math.min(100, value + KEY_STEP));
     },
     [value, onChange],
   );
@@ -92,13 +96,17 @@ export function Lever({ value, onChange }: Props) {
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
-        <div className="lever__case" />
-        <div className="lever__ring lever__ring--outer" />
-        <div className="lever__ring lever__ring--inner" />
-        <div className="lever__pivot" />
-        <div className="lever__arm" style={{ transform: `rotate(${angleDeg}deg)` }}>
-          <div className="lever__stick" />
+        <div className="lever__case">
+          <div className="lever__ring--outer">
+            <div className="lever__ring lever__ring--inner" />
+          </div>
+        </div>
+        <div
+          className="lever__arm"
+          style={{ transform: `rotate(${angleDeg}deg)` }}
+        >
           <div className="lever__handle" />
+          <div className="lever__stick" />
         </div>
       </div>
     </div>
