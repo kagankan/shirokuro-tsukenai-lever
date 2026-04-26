@@ -24,17 +24,18 @@ export default defineConfig({
     extend: {
       tokens: {
         colors: {
-          // 値として既存の var(--text) 等を指す。
-          // Panda は --colors-text = var(--text) のように間接参照を生成する。
-          // → 既存の :root 定義 (index.css) はそのまま、Panda 側からは
-          //   `css({ color: 'text' })` で型付き補完できる。
+          // text と bg は index.css の base スタイル(`:root` の color/background や
+          // h1,h2 の color)からも参照されるため、:root の `--text` `--bg` を介した
+          // 間接参照を維持する。
           text: { value: "var(--text)" },
-          textMuted: { value: "var(--text-muted)" },
           bg: { value: "var(--bg)" },
-          surface: { value: "var(--surface)" },
-          border: { value: "var(--border)" },
-          accent: { value: "var(--accent)" },
-          accentText: { value: "var(--accent-text)" },
+          // 他は CSS ファイルから直接参照していないので Panda の token として直書き。
+          // Panda が tokens layer で `--colors-X: <hex>` を生成し、css() からのみ参照される。
+          textMuted: { value: "#8b8ba7" },
+          surface: { value: "#17181f" },
+          border: { value: "#2a2a3c" },
+          accent: { value: "#c084fc" },
+          accentText: { value: "#0e0f14" },
         },
       },
     },

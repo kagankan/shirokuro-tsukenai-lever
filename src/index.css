@@ -3,13 +3,10 @@
 
 @layer base {
   :root {
+    /* このファイル内 (color, background, h1/h2 の color) で参照される変数のみ残す。
+       他の色 (text-muted, surface, border, accent, accent-text) は panda.config.ts に直書き済み。 */
     --text: #f0f0f5;
-    --text-muted: #8b8ba7;
     --bg: #0e0f14;
-    --surface: #17181f;
-    --border: #2a2a3c;
-    --accent: #c084fc;
-    --accent-text: #0e0f14;
 
     --sans: system-ui, "Segoe UI", Roboto, sans-serif;
 
