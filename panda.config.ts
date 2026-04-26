@@ -8,8 +8,8 @@ export default defineConfig({
   include: ["./src/**/*.{js,jsx,ts,tsx}"],
   exclude: [],
 
-  // styled-system/jsx を使うなら必要らしい
-  jsxFramework: "react",
+  // 以下は styled-system/jsx を使うなら必要らしい
+  // jsxFramework: "react",
 
   // プロジェクト固有の condition を追加。
   // _hoverNotFocus: hover中だが focus されていない状態。:where() で specificity 寄与を 0 に
