@@ -32,11 +32,6 @@ const topicSectionClass = css({
   gap: '3',
 });
 
-const topicIconClass = css({
-  flexShrink: 0,
-  color: 'accent',
-});
-
 const mapSectionClass = css({
   flex: 1,
   minHeight: 0,
@@ -105,7 +100,7 @@ export function RoomPage({ roomId, player }: Props) {
   return (
     <div className={pageClass}>
       <section className={topicSectionClass}>
-        <LeverIcon className={topicIconClass} size={40} />
+        <LeverIcon />
         <TopicEditor roomId={roomId} initialTopic={roomState.room.topic} />
       </section>
       <section className={mapSectionClass}>
