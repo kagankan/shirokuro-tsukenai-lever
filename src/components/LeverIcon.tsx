@@ -7,8 +7,8 @@ export function LeverIcon() {
   return (
     <div
       className={css({
-        width: '16',
-        height: '16',
+        width: '100%',
+        aspectRatio: '1',
         containerType: 'size',
         display: 'grid',
         gridTemplateRows: 'auto 1fr 1fr',

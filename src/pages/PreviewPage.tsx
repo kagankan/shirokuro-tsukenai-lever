@@ -41,7 +41,9 @@ export function PreviewPage() {
           gap: '3',
         })}
       >
-        <LeverIcon />
+        <div className={css({ flexShrink: 0, width: '12' })}>
+          <LeverIcon />
+        </div>
         <TopicInput value={topic} onChange={setTopic} />
       </section>
       <section

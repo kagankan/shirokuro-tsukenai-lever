@@ -100,7 +100,9 @@ export function RoomPage({ roomId, player }: Props) {
   return (
     <div className={pageClass}>
       <section className={topicSectionClass}>
-        <LeverIcon />
+        <div className={css({ flexShrink: 0, width: '12' })}>
+          <LeverIcon />
+        </div>
         <TopicEditor roomId={roomId} initialTopic={roomState.room.topic} />
       </section>
       <section className={mapSectionClass}>

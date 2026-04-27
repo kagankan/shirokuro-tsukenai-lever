@@ -17,48 +17,6 @@ type Props = {
 // CSS カスタムプロパティ --value を style 経由で渡すための型
 type StyleWithValue = CSSProperties & { '--value': number };
 
-// 外側コンテナ。aspect-ratio で arc が乗る舞台のサイズを確定させる
-const wrapperClass = css({
-  position: 'relative',
-  width: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingY: '4',
-  paddingX: '6',
-  aspectRatio: '2 / 1',
-  border: '1px solid token(colors.border)',
-});
-
-// arc を描画する正方形の枠。
-//   - container-type: size で内側に cqw/cqh の query container を立てる
-//   - 親(2:1)より広めの正方形にして上端を揃え、頂点が見える形にする
-//   - --min-angle / --max-angle は子(arc, player, edge)が共有する角度定数
-const archClass = css({
-  containerType: 'size',
-  position: 'absolute',
-  top: 0,
-  left: '-9999%',
-  right: '-9999%',
-  marginInline: 'auto',
-  aspectRatio: '1 / 1',
-  width: '130%',
-  overflow: 'visible',
-  // arc 上に配置する要素(player / edge)が共有する角度定数
-  '--min-angle': '-50deg',
-  '--max-angle': '50deg',
-});
-
-// アーチ本体。conic-gradient + radial-gradient mask で
-// 角度方向と半径方向のリング状切り抜きを実現する
-const arcClass = css({
-  position: 'absolute',
-  inset: 0,
-  backgroundImage:
-    'conic-gradient(from 180deg, transparent 0 calc(180deg + var(--min-angle)), rgb(113 204 226) calc(180deg + var(--min-angle)), rgb(110 64 170) calc(180deg + var(--max-angle)), transparent calc(180deg + var(--max-angle)))',
-  maskImage: 'radial-gradient(closest-side, transparent 75%, black 0% 100%, transparent 50%)',
-});
-
 // --value (0..100) を inline style で受け取り、arc 上に
 // transform: translate で配置するための共有計算 (player / edge 共通)。
 // top/left を動かさないので value 変化時も layout/paint を回避し composite だけで済む
@@ -120,9 +78,49 @@ const playerNicknameClass = css({
 
 export function ResultMap({ players }: Props) {
   return (
-    <div className={wrapperClass}>
-      <div className={archClass}>
-        <div className={arcClass} />
+    <div
+      // 外側コンテナ。aspect-ratio で arc が乗る舞台のサイズを確定させる
+      className={css({
+        position: 'relative',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        aspectRatio: '3 / 1',
+      })}
+    >
+      <div
+        // arc を描画する正方形の枠。
+        //   - container-type: size で内側に cqw/cqh の query container を立てる
+        //   - 親より広めの正方形にして上端を揃え、頂点が見える形にする
+        //   - --min-angle / --max-angle は子(arc, player, edge)が共有する角度定数
+        className={css({
+          containerType: 'size',
+          position: 'absolute',
+          top: 0,
+          left: '-9999%',
+          right: '-9999%',
+          marginInline: 'auto',
+          aspectRatio: '1 / 1',
+          width: '130%',
+          overflow: 'visible',
+          // arc 上に配置する要素(player / edge)が共有する角度定数
+          '--min-angle': '-50deg',
+          '--max-angle': '50deg',
+        })}
+      >
+        <div
+          // アーチ本体。conic-gradient + radial-gradient mask で
+          // 角度方向と半径方向のリング状切り抜きを実現する
+          className={css({
+            position: 'absolute',
+            inset: 0,
+            backgroundImage:
+              'conic-gradient(from 180deg, transparent 0 calc(180deg + var(--min-angle)), rgb(113 204 226) calc(180deg + var(--min-angle)), rgb(110 64 170) calc(180deg + var(--max-angle)), transparent calc(180deg + var(--max-angle)))',
+            maskImage:
+              'radial-gradient(closest-side, transparent 75%, black 0% 100%, transparent 50%)',
+          })}
+        />
 
         {players.map((p) => {
           const emoji = ICON_PRESETS.find((i) => i.id === p.iconId)?.emoji ?? '❓';
