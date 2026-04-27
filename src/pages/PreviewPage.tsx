@@ -1,10 +1,6 @@
 import { useState } from 'react';
-import { css } from '../../styled-system/css';
-import { Lever } from '../components/Lever';
-import { LeverIcon } from '../components/LeverIcon';
 import type { PlayerSlot } from '../components/ResultMap';
-import { ResultMap } from '../components/ResultMap';
-import { TopicInput } from '../components/TopicInput';
+import { RoomLayout } from '../components/RoomLayout';
 
 // 自分以外のダミー参加者（さまざまな値で配置例を確認するため）
 const OTHER_PLAYERS: Omit<PlayerSlot, 'value'>[] = [
@@ -28,49 +24,10 @@ export function PreviewPage() {
   ];
 
   return (
-    <div className={css({ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 })}>
-      <section
-        className={css({
-          paddingY: '3.5',
-          paddingX: '5',
-          flexShrink: 0,
-          background: 'surface',
-          borderBottom: '1px solid token(colors.border)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '3',
-        })}
-      >
-        <div className={css({ flexShrink: 0, width: '12' })}>
-          <LeverIcon />
-        </div>
-        <TopicInput value={topic} onChange={setTopic} />
-      </section>
-      <section
-        className={css({
-          flex: 1,
-          minHeight: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingY: '3',
-          paddingX: '4',
-        })}
-      >
-        <ResultMap players={players} />
-      </section>
-      <section
-        className={css({
-          flexShrink: 0,
-          borderTop: '1px solid token(colors.border)',
-          background: 'surface',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        })}
-      >
-        <Lever value={myValue} onChange={setMyValue} />
-      </section>
-    </div>
+    <RoomLayout
+      topic={{ value: topic, onChange: setTopic }}
+      players={players}
+      lever={{ value: myValue, onChange: setMyValue }}
+    />
   );
 }
