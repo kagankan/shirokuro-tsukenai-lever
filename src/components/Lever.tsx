@@ -121,101 +121,113 @@ export function Lever({ value, onChange }: Props) {
         // レバー全体の舞台
         className={css({
           position: 'relative',
+          display: 'flex',
           width: '100%',
           height: '350px',
           cursor: 'grab',
           _active: { cursor: 'grabbing' },
         })}
       >
-        {/* 黒の筐体（外箱） */}
         <div
+          // レバーの見た目の定義
           className={css({
-            position: 'absolute',
-            inset: 0,
-            marginTop: 'auto',
-            marginInline: 'auto',
-            width: '50%',
-            aspectRatio: '1.2',
-            borderRadius: '9999px 9999px 0 0',
-            // paddingX: '8',
-            // paddingTop: '8',
-            // paddingBottom: '4',
-            padding: 'token(spacing.8) token(spacing.8) token(spacing.4)', // 上記3行をまとめるとこう書ける
-            background: LEVER_BLACK,
+            position: 'relative',
+            height: '100%',
+            maxHeight: '80vw',
+            margin: 'auto auto 0',
+            aspectRatio: '2 / 3',
+            containerType: 'size',
           })}
         >
-          {/* 青のU字（外） */}
           <div
+            // 黒の筐体（外箱）
             className={css({
+              position: 'absolute',
+              inset: 0,
+              marginTop: 'auto',
+              marginInline: 'auto',
               width: '100%',
-              height: '100%',
-              paddingX: '12',
-              paddingTop: '12',
-              paddingBottom: 0,
+              aspectRatio: '1.2',
               borderRadius: '9999px 9999px 0 0',
-              background: LEVER_BLUE,
+              // paddingX: '8',
+              // paddingTop: '8',
+              // paddingBottom: '4',
+              padding: '15cqw 15cqw 8cqw', // 上記3行をまとめるとこう書ける
+              background: LEVER_BLACK,
             })}
           >
-            {/* 紫のU字（内） */}
+            {/* 青のU字（外） */}
             <div
               className={css({
                 width: '100%',
                 height: '100%',
+                padding: '16cqw 16cqw 0',
                 borderRadius: '9999px 9999px 0 0',
-                background: LEVER_PURPLE,
+                background: LEVER_BLUE,
+              })}
+            >
+              {/* 紫のU字（内） */}
+              <div
+                className={css({
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '9999px 9999px 0 0',
+                  background: LEVER_PURPLE,
+                })}
+              />
+            </div>
+          </div>
+          {/* レバーアーム */}
+          <div
+            style={{ transform: `rotate(${angleDeg}deg)` }}
+            className={css({
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              transformOrigin: '50% 100%',
+              width: '30%',
+              aspectRatio: '1 / 3',
+              margin: 'auto',
+              marginTop: '4',
+              zIndex: -1,
+            })}
+          >
+            {/* ハンドル。棒の先端に乗る形 (黒い丸の中心に小さい黒丸を ::before で重ねる) */}
+            <div
+              className={css({
+                position: 'absolute',
+                left: '-9999%',
+                right: '-9999%',
+                top: 0,
+                margin: 'auto',
+                padding: '2',
+                width: '100%',
+                aspectRatio: '1',
+                borderRadius: '9999px',
+                background: LEVER_BLUE,
+                _before: {
+                  content: '""',
+                  display: 'block',
+                  borderRadius: '9999px',
+                  width: '100%',
+                  height: '100%',
+                  background: '#050608',
+                },
+              })}
+            />
+            {/* 青の棒 */}
+            <div
+              className={css({
+                margin: 'auto',
+                marginTop: '4',
+                width: '50%',
+                height: '100%',
+                background: LEVER_BLUE,
+                borderRadius: '9999px',
               })}
             />
           </div>
-        </div>
-        {/* レバーアーム: pivot を原点とする 0サイズのアンカー */}
-        <div
-          style={{ transform: `rotate(${angleDeg}deg)` }}
-          className={css({
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            transformOrigin: '50% 100%',
-            width: 'fit-content',
-            margin: 'auto',
-            marginTop: '4',
-            zIndex: -1,
-          })}
-        >
-          {/* ハンドル。棒の先端に乗る形 (黒い丸の中心に小さい黒丸を ::before で重ねる) */}
-          <div
-            className={css({
-              position: 'absolute',
-              left: '-9999%',
-              right: '-9999%',
-              top: 0,
-              margin: 'auto',
-              padding: '2',
-              width: '4rem',
-              height: '4rem',
-              borderRadius: '9999px',
-              background: LEVER_BLUE,
-              _before: {
-                content: '""',
-                display: 'block',
-                borderRadius: '9999px',
-                width: '100%',
-                height: '100%',
-                background: '#050608',
-              },
-            })}
-          />
-          {/* 青の棒 */}
-          <div
-            className={css({
-              margin: 'auto',
-              paddingTop: '4',
-              width: '1.5rem',
-              height: '280px',
-              background: LEVER_BLUE,
-              borderRadius: '9999px',
-            })}
-          />
         </div>
       </div>
     </div>
