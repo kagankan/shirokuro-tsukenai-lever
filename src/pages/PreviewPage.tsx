@@ -4,6 +4,7 @@ import { Lever } from '../components/Lever';
 import { LeverIcon } from '../components/LeverIcon';
 import type { PlayerSlot } from '../components/ResultMap';
 import { ResultMap } from '../components/ResultMap';
+import { TopicInput } from '../components/TopicInput';
 
 // 自分以外のダミー参加者（さまざまな値で配置例を確認するため）
 const OTHER_PLAYERS: Omit<PlayerSlot, 'value'>[] = [
@@ -41,39 +42,7 @@ export function PreviewPage() {
         })}
       >
         <LeverIcon className={css({ flexShrink: 0, color: 'accent' })} size={40} />
-        <div className={css({ display: 'flex', alignItems: 'center', gap: '2', flex: 1 })}>
-          <input
-            type="text"
-            placeholder="お題を入力してください"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            maxLength={100}
-            aria-label="お題"
-            // TV字幕風: 大きく・太く・下線のみ
-            className={css({
-              flex: 1,
-              font: 'inherit',
-              fontSize: '1.1875rem',
-              fontWeight: 700,
-              letterSpacing: '-0.01em',
-              paddingY: '1',
-              paddingX: '0.5',
-              border: 'none',
-              borderBottom: '0.125rem solid transparent',
-              background: 'transparent',
-              color: 'text',
-              outline: 'none',
-              transition: 'border-color 0.15s ease',
-              _hoverNotFocus: { borderColor: 'border' },
-              _focus: { borderColor: 'accent' },
-              _placeholder: {
-                color: 'textMuted',
-                fontWeight: 400,
-                fontSize: 'md',
-              },
-            })}
-          />
-        </div>
+        <TopicInput value={topic} onChange={setTopic} />
       </section>
       <section
         className={css({
