@@ -17,32 +17,6 @@ type Props = {
 // CSS カスタムプロパティ --value を style 経由で渡すための型
 type StyleWithValue = CSSProperties & { '--value': number; '--player-ratio'?: number };
 
-// --value (0..100) を inline style で受け取り、arc 上に
-// transform: translate で配置するための共有計算 (player / edge 共通)。
-// top/left を動かさないので value 変化時も layout/paint を回避し composite だけで済む
-const onArcClass = css({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-
-  // ユーザー人数に応じて半径を変える。人数が多いときは小さくして詰める。
-  // --player-ratio は 0(外周)〜1(内側) の比率で、JS 側で計算する(N=1 で 0/0 を避けるため)
-  '--radius': 'calc(50cqw - var(--player-ratio, 1) * 12cqw)',
-
-  '--angle': 'calc(var(--min-angle) + var(--value) * (var(--max-angle) - var(--min-angle)) / 100)',
-  '--x': 'calc(50cqw + var(--radius) * sin(var(--angle)))',
-  '--y': 'calc(50cqh - var(--radius) * cos(var(--angle)))',
-});
-
-const edgeClass = css({
-  fontSize: 'xs',
-  fontWeight: 600,
-  color: 'textMuted',
-  // 中央x揃え + 点から 18px 下へ
-  transform: 'translate(calc(var(--x) - 50%), calc(var(--y) + 18px))',
-  pointerEvents: 'none',
-});
-
 export function ResultMap({ players }: Props) {
   return (
     <div
@@ -106,14 +80,25 @@ export function ResultMap({ players }: Props) {
                     '--player-ratio': array.length > 1 ? index / (array.length - 1) : 0,
                   } as StyleWithValue
                 }
-                className={cx(
-                  onArcClass,
-                  css({
-                    // 中央x/y揃え
-                    transform: 'translate(calc(var(--x) - 50%), calc(var(--y) - 50%))',
-                    pointerEvents: 'none',
-                  }),
-                )}
+                className={css({
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+
+                  // ユーザー人数に応じて半径を変える。人数が多いときは小さくして詰める。
+                  // --player-ratio は 0(外周)〜1(内側) の比率で、JS 側で計算する(N=1 で 0/0 を避けるため)
+                  '--radius': 'calc(50cqw - var(--player-ratio, 1) * 12cqw)',
+
+                  // --value (0..100) を inline style で受け取り、arc 上に transform: translate で配置する。
+                  // top/left を動かさないので value 変化時も layout/paint を回避し composite だけで済む
+                  '--angle':
+                    'calc(var(--min-angle) + var(--value) * (var(--max-angle) - var(--min-angle)) / 100)',
+                  '--x': 'calc(50cqw + var(--radius) * sin(var(--angle)))',
+                  '--y': 'calc(50cqh - var(--radius) * cos(var(--angle)))',
+                  // 中央x/y揃え
+                  transform: 'translate(calc(var(--x) - 50%), calc(var(--y) - 50%))',
+                  pointerEvents: 'none',
+                })}
               >
                 <div
                   className={css({
@@ -171,12 +156,6 @@ export function ResultMap({ players }: Props) {
               </div>
             );
           })}
-          <div style={{ '--value': 0 } as StyleWithValue} className={cx(onArcClass, edgeClass)}>
-            0
-          </div>
-          <div style={{ '--value': 100 } as StyleWithValue} className={cx(onArcClass, edgeClass)}>
-            100
-          </div>
         </div>
       </div>
     </div>
