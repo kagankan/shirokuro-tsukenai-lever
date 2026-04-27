@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { css, cx } from '../../styled-system/css';
+import { css } from '../../styled-system/css';
 import type { IconId } from '../lib/icons';
 import { ICON_PRESETS } from '../lib/icons';
 
