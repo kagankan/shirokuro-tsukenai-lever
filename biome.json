@@ -6,7 +6,14 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!dist", "!node_modules", "!.claude", "!.mcp.json"]
+    "includes": [
+      "**",
+      "!dist",
+      "!node_modules",
+      "!.claude",
+      "!.mcp.json",
+      "!src/lib/database.types.ts"
+    ]
   },
   "formatter": {
     "enabled": true,
