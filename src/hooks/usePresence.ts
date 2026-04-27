@@ -1,5 +1,5 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { IconId } from '../lib/icons';
 import { supabase } from '../lib/supabase';
 
@@ -39,7 +39,7 @@ export function usePresence(
   // Trailing throttle: pending broadcast timer
   const broadcastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const buildPlayers = (): PresencePlayer[] => {
+  const buildPlayers = useCallback((): PresencePlayer[] => {
     const channel = channelRef.current;
     if (!channel) return [];
     const raw = channel.presenceState<{ nickname: string; iconId: IconId }>();
@@ -49,7 +49,7 @@ export function usePresence(
       iconId: metas[0].iconId,
       value: leverValuesRef.current.get(key) ?? 50,
     }));
-  };
+  }, []);
 
   useEffect(() => {
     const myKey = myKeyRef.current;
@@ -88,7 +88,10 @@ export function usePresence(
         channelRef.current?.send({
           type: 'broadcast',
           event: 'lever_update',
-          payload: { presenceKey: myKeyRef.current, value: myValue } satisfies LeverPayload,
+          payload: {
+            presenceKey: myKeyRef.current,
+            value: myValue,
+          } satisfies LeverPayload,
         });
       })
       .on('broadcast', { event: 'lever_update' }, ({ payload }: { payload: LeverPayload }) => {
@@ -125,7 +128,7 @@ export function usePresence(
         supabase.removeChannel(ch);
       }, 100);
     };
-  }, [roomId]);
+  }, [roomId, buildPlayers]);
 
   const broadcastLever = (value: number) => {
     leverValuesRef.current.set(myKeyRef.current, value);
@@ -148,7 +151,10 @@ export function usePresence(
       channelRef.current?.send({
         type: 'broadcast',
         event: 'lever_update',
-        payload: { presenceKey: myKeyRef.current, value } satisfies LeverPayload,
+        payload: {
+          presenceKey: myKeyRef.current,
+          value,
+        } satisfies LeverPayload,
       });
     } else {
       // Within throttle window: schedule a trailing broadcast to ensure
@@ -160,7 +166,10 @@ export function usePresence(
         channelRef.current?.send({
           type: 'broadcast',
           event: 'lever_update',
-          payload: { presenceKey: myKeyRef.current, value: latestValue } satisfies LeverPayload,
+          payload: {
+            presenceKey: myKeyRef.current,
+            value: latestValue,
+          } satisfies LeverPayload,
         });
       }, BROADCAST_THROTTLE_MS - elapsed);
     }

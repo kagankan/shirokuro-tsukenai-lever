@@ -1,5 +1,5 @@
-import { useCallback, useRef } from "react";
-import { css } from "../../styled-system/css";
+import { useCallback, useRef } from 'react';
+import { css } from '../../styled-system/css';
 
 const MIN_ANGLE = -60; // value=0
 const MAX_ANGLE = 60; // value=100
@@ -12,9 +12,9 @@ const PIVOT_X = 140;
 const PIVOT_Y = 145;
 
 // レバー固有の色 (rgb literal を Panda の color として直接渡す)
-const LEVER_BLUE = "rgb(43 158 218)";
-const LEVER_PURPLE = "rgb(87 62 157)";
-const LEVER_BLACK = "rgb(5 6 8)";
+const LEVER_BLUE = 'rgb(43 158 218)';
+const LEVER_PURPLE = 'rgb(87 62 157)';
+const LEVER_BLACK = 'rgb(5 6 8)';
 
 function valueToAngle(value: number): number {
   return MIN_ANGLE + (value / 100) * (MAX_ANGLE - MIN_ANGLE);
@@ -36,19 +36,16 @@ export function Lever({ value, onChange }: Props) {
 
   const angleDeg = valueToAngle(value);
 
-  const computeAngleFromPointer = useCallback(
-    (clientX: number, clientY: number): number => {
-      const stage = stageRef.current;
-      if (!stage) return 0;
-      const rect = stage.getBoundingClientRect();
-      const scaleX = STAGE_W / rect.width;
-      const scaleY = STAGE_H / rect.height;
-      const dx = (clientX - rect.left) * scaleX - PIVOT_X;
-      const dy = (clientY - rect.top) * scaleY - PIVOT_Y;
-      return (Math.atan2(dx, -dy) * 180) / Math.PI;
-    },
-    [],
-  );
+  const computeAngleFromPointer = useCallback((clientX: number, clientY: number): number => {
+    const stage = stageRef.current;
+    if (!stage) return 0;
+    const rect = stage.getBoundingClientRect();
+    const scaleX = STAGE_W / rect.width;
+    const scaleY = STAGE_H / rect.height;
+    const dx = (clientX - rect.left) * scaleX - PIVOT_X;
+    const dy = (clientY - rect.top) * scaleY - PIVOT_Y;
+    return (Math.atan2(dx, -dy) * 180) / Math.PI;
+  }, []);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -75,9 +72,8 @@ export function Lever({ value, onChange }: Props) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "ArrowLeft") onChange(Math.max(0, value - KEY_STEP));
-      else if (e.key === "ArrowRight")
-        onChange(Math.min(100, value + KEY_STEP));
+      if (e.key === 'ArrowLeft') onChange(Math.max(0, value - KEY_STEP));
+      else if (e.key === 'ArrowRight') onChange(Math.min(100, value + KEY_STEP));
     },
     [value, onChange],
   );
@@ -85,26 +81,26 @@ export function Lever({ value, onChange }: Props) {
   return (
     <div
       className={css({
-        width: "100%",
-        aspectRatio: "1.4",
+        width: '100%',
+        aspectRatio: '1.4',
         // 子要素の z-index を親要素内で完結させる
-        isolation: "isolate",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        userSelect: "none",
-        touchAction: "none",
+        isolation: 'isolate',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        userSelect: 'none',
+        touchAction: 'none',
       })}
     >
       <span
         className={css({
-          fontSize: "1.75rem",
+          fontSize: '1.75rem',
           fontWeight: 700,
-          color: "text",
+          color: 'text',
           lineHeight: 1,
-          marginBottom: "2",
-          fontVariantNumeric: "tabular-nums",
+          marginBottom: '2',
+          fontVariantNumeric: 'tabular-nums',
         })}
       >
         {value}
@@ -124,48 +120,48 @@ export function Lever({ value, onChange }: Props) {
         onPointerCancel={handlePointerUp}
         // レバー全体の舞台
         className={css({
-          position: "relative",
-          width: "100%",
-          height: "350px",
-          cursor: "grab",
-          _active: { cursor: "grabbing" },
+          position: 'relative',
+          width: '100%',
+          height: '350px',
+          cursor: 'grab',
+          _active: { cursor: 'grabbing' },
         })}
       >
         {/* 黒の筐体（外箱） */}
         <div
           className={css({
-            position: "absolute",
+            position: 'absolute',
             inset: 0,
-            marginTop: "auto",
-            marginInline: "auto",
-            width: "50%",
-            aspectRatio: "1.2",
-            borderRadius: "9999px 9999px 0 0",
+            marginTop: 'auto',
+            marginInline: 'auto',
+            width: '50%',
+            aspectRatio: '1.2',
+            borderRadius: '9999px 9999px 0 0',
             // paddingX: '8',
             // paddingTop: '8',
             // paddingBottom: '4',
-            padding: "token(spacing.8) token(spacing.8) token(spacing.4)", // 上記3行をまとめるとこう書ける
+            padding: 'token(spacing.8) token(spacing.8) token(spacing.4)', // 上記3行をまとめるとこう書ける
             background: LEVER_BLACK,
           })}
         >
           {/* 青のU字（外） */}
           <div
             className={css({
-              width: "100%",
-              height: "100%",
-              paddingX: "12",
-              paddingTop: "12",
+              width: '100%',
+              height: '100%',
+              paddingX: '12',
+              paddingTop: '12',
               paddingBottom: 0,
-              borderRadius: "9999px 9999px 0 0",
+              borderRadius: '9999px 9999px 0 0',
               background: LEVER_BLUE,
             })}
           >
             {/* 紫のU字（内） */}
             <div
               className={css({
-                width: "100%",
-                height: "100%",
-                borderRadius: "9999px 9999px 0 0",
+                width: '100%',
+                height: '100%',
+                borderRadius: '9999px 9999px 0 0',
                 background: LEVER_PURPLE,
               })}
             />
@@ -175,49 +171,49 @@ export function Lever({ value, onChange }: Props) {
         <div
           style={{ transform: `rotate(${angleDeg}deg)` }}
           className={css({
-            position: "absolute",
+            position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            transformOrigin: "50% 100%",
-            width: "fit-content",
-            margin: "auto",
-            marginTop: "4",
+            transformOrigin: '50% 100%',
+            width: 'fit-content',
+            margin: 'auto',
+            marginTop: '4',
             zIndex: -1,
           })}
         >
           {/* ハンドル。棒の先端に乗る形 (黒い丸の中心に小さい黒丸を ::before で重ねる) */}
           <div
             className={css({
-              position: "absolute",
-              left: "-9999%",
-              right: "-9999%",
+              position: 'absolute',
+              left: '-9999%',
+              right: '-9999%',
               top: 0,
-              margin: "auto",
-              padding: "2",
-              width: "4rem",
-              height: "4rem",
-              borderRadius: "9999px",
+              margin: 'auto',
+              padding: '2',
+              width: '4rem',
+              height: '4rem',
+              borderRadius: '9999px',
               background: LEVER_BLUE,
               _before: {
                 content: '""',
-                display: "block",
-                borderRadius: "9999px",
-                width: "100%",
-                height: "100%",
-                background: "#050608",
+                display: 'block',
+                borderRadius: '9999px',
+                width: '100%',
+                height: '100%',
+                background: '#050608',
               },
             })}
           />
           {/* 青の棒 */}
           <div
             className={css({
-              margin: "auto",
-              paddingTop: "4",
-              width: "1.5rem",
-              height: "280px",
+              margin: 'auto',
+              paddingTop: '4',
+              width: '1.5rem',
+              height: '280px',
               background: LEVER_BLUE,
-              borderRadius: "9999px",
+              borderRadius: '9999px',
             })}
           />
         </div>

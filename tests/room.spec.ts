@@ -19,7 +19,7 @@ async function joinRoom(page: import('@playwright/test').Page, nickname: string)
  * ルームを新規作成し、そのURLを返す
  */
 async function createRoom(page: import('@playwright/test').Page): Promise<string> {
-  await page.goto(BASE_URL + '/');
+  await page.goto(`${BASE_URL}/`);
   await page.waitForLoadState('networkidle');
   await page.getByRole('button', { name: 'ルームを作成' }).click();
   // 参加画面に遷移するのを待つ
@@ -32,7 +32,7 @@ test.describe('ルーム機能', () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
 
-    const roomUrl = await createRoom(page);
+    await createRoom(page);
     await joinRoom(page, 'ユーザーA');
 
     // 自分のニックネームが結果マップに表示される
@@ -72,7 +72,7 @@ test.describe('ルーム機能', () => {
   test('レバーの値が結果マップに反映される', async ({ browser }) => {
     const ctxA = await browser.newContext();
     const pageA = await ctxA.newPage();
-    const roomUrl = await createRoom(pageA);
+    await createRoom(pageA);
     await joinRoom(pageA, 'ユーザーA');
     await expect(pageA.getByText('ユーザーA')).toBeVisible({ timeout: REALTIME_TIMEOUT });
 
