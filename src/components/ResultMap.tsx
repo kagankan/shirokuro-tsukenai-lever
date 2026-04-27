@@ -42,44 +42,6 @@ const edgeClass = css({
   pointerEvents: 'none',
 });
 
-const playerClass = css({
-  // 中央x/y揃え
-  transform: 'translate(calc(var(--x) - 50%), calc(var(--y) - 50%))',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  pointerEvents: 'none',
-  whiteSpace: 'nowrap',
-});
-
-const playerValueClass = css({
-  fontSize: '0.8125rem',
-  fontWeight: 700,
-  color: 'text',
-  lineHeight: 1,
-  marginBottom: '1',
-});
-
-const playerIconClass = css({
-  width: '36px',
-  height: '36px',
-  borderRadius: '50%',
-  background: '#0e0f14',
-  border: '1.5px solid rgba(255, 255, 255, 0.5)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: 'xl',
-  lineHeight: 1,
-});
-
-const playerNicknameClass = css({
-  fontSize: '0.6875rem',
-  color: 'text',
-  marginTop: '1',
-  lineHeight: 1,
-});
-
 export function ResultMap({ players }: Props) {
   return (
     <div
@@ -144,11 +106,68 @@ export function ResultMap({ players }: Props) {
                     '--players-count': array.length,
                   } as StyleWithValue
                 }
-                className={cx(onArcClass, playerClass)}
+                className={cx(
+                  onArcClass,
+                  css({
+                    // 中央x/y揃え
+                    transform: 'translate(calc(var(--x) - 50%), calc(var(--y) - 50%))',
+                    pointerEvents: 'none',
+                  }),
+                )}
               >
-                <div className={playerValueClass}>{p.value}</div>
-                <div className={playerIconClass}>{emoji}</div>
-                <div className={playerNicknameClass}>{p.nickname}</div>
+                <div
+                  className={css({
+                    fontSize: 'xs',
+                    color: '#fff',
+                    marginTop: '-1',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    lineHeight: 1,
+                    marginBottom: '1',
+                  })}
+                >
+                  {p.nickname}
+                </div>
+                <div
+                  className={css({
+                    display: 'grid',
+                    width: '14',
+                    height: '14',
+                    textAlign: 'center',
+                    whiteSpace: 'nowrap',
+                    borderRadius: '50%',
+                    aspectRatio: '1',
+                    background: 'rgba(255 255 255)',
+                    border: '4px solid #000',
+                    overflow: 'hidden',
+                  })}
+                >
+                  <div>
+                    <div
+                      className={css({
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 'xl',
+                        lineHeight: 1,
+                      })}
+                    >
+                      {emoji}
+                    </div>
+                  </div>
+                  <div
+                    className={css({
+                      width: '100%',
+                      background: '#000',
+                      color: '#fff',
+                      fontSize: 'md',
+                      fontWeight: 700,
+                      lineHeight: 1,
+                    })}
+                  >
+                    {p.value}
+                  </div>
+                </div>
               </div>
             );
           })}

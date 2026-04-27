@@ -32,8 +32,6 @@ const mapSectionClass = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  paddingY: '3',
-  paddingX: '4',
 });
 
 const leverSectionClass = css({
