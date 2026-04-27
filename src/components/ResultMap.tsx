@@ -15,7 +15,7 @@ type Props = {
 };
 
 // CSS カスタムプロパティ --value を style 経由で渡すための型
-type StyleWithValue = CSSProperties & { '--value': number; '--index': number };
+type StyleWithValue = CSSProperties & { '--value': number; '--player-ratio'?: number };
 
 // --value (0..100) を inline style で受け取り、arc 上に
 // transform: translate で配置するための共有計算 (player / edge 共通)。
@@ -25,8 +25,9 @@ const onArcClass = css({
   top: 0,
   left: 0,
 
-  // ユーザー人数に応じて半径を変える。人数が多いときは小さくして詰める
-  '--radius': 'calc(50cqw - (var(--index, 1) / (var(--players-count, 2) - 1) * 12cqw))',
+  // ユーザー人数に応じて半径を変える。人数が多いときは小さくして詰める。
+  // --player-ratio は 0(外周)〜1(内側) の比率で、JS 側で計算する(N=1 で 0/0 を避けるため)
+  '--radius': 'calc(50cqw - var(--player-ratio, 1) * 12cqw)',
 
   '--angle': 'calc(var(--min-angle) + var(--value) * (var(--max-angle) - var(--min-angle)) / 100)',
   '--x': 'calc(50cqw + var(--radius) * sin(var(--angle)))',
@@ -102,8 +103,7 @@ export function ResultMap({ players }: Props) {
                 style={
                   {
                     '--value': p.value,
-                    '--index': index,
-                    '--players-count': array.length,
+                    '--player-ratio': array.length > 1 ? index / (array.length - 1) : 0,
                   } as StyleWithValue
                 }
                 className={cx(
