@@ -99,8 +99,8 @@ export function Lever({ value, onChange }: Props) {
           fontWeight: 700,
           color: 'text',
           lineHeight: 1,
-          marginBottom: '2',
           fontVariantNumeric: 'tabular-nums',
+          paddingY: '2',
         })}
       >
         {value}

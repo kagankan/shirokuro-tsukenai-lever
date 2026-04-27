@@ -8,6 +8,9 @@ import { TopicInput } from './TopicInput';
 
 const pageClass = css({
   flex: 1,
+  width: '100%',
+  maxWidth: 'lg',
+  marginInline: 'auto',
   display: 'flex',
   flexDirection: 'column',
   minHeight: 0,

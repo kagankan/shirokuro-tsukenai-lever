@@ -21,6 +21,10 @@ export function JoinPage({ onJoin }: Props) {
     <main
       className={css({
         flex: 1,
+        width: '100%',
+        maxWidth: '480px',
+        marginInline: 'auto',
+        padding: '4',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
