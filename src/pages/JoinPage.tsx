@@ -10,6 +10,13 @@ type Props = {
 export function JoinPage({ onJoin }: Props) {
   const [nickname, setNickname] = useState('');
   const [iconId, setIconId] = useState<PlayerInfo['iconId']>(DEFAULT_ICON);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyUrl = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +40,41 @@ export function JoinPage({ onJoin }: Props) {
       })}
     >
       <h1 className={css({ fontSize: '1.375rem', textAlign: 'center' })}>ルームに参加</h1>
+      <div
+        className={css({
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '2',
+        })}
+      >
+        <p className={css({ fontSize: 'sm', color: 'textMuted', textAlign: 'center' })}>
+          URLを共有すると他のメンバーがルームに参加できます
+        </p>
+        <button
+          type="button"
+          onClick={handleCopyUrl}
+          className={css({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1.5',
+            paddingY: '2',
+            paddingX: '3.5',
+            border: '1.5px solid token(colors.border)',
+            borderRadius: '999px',
+            background: 'surface',
+            color: copied ? 'accent' : 'textMuted',
+            fontSize: 'sm',
+            fontWeight: 600,
+            transition: 'color 0.15s ease, border-color 0.15s ease',
+            borderColor: copied ? 'accent' : 'border',
+            _hover: { borderColor: 'accent', color: 'accent' },
+          })}
+        >
+          {copied ? '✓ コピーしました' : 'URLをコピー'}
+        </button>
+      </div>
       <form
         onSubmit={handleSubmit}
         className={css({ width: '100%', display: 'flex', flexDirection: 'column', gap: '6' })}
