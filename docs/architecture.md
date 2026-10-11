@@ -66,7 +66,37 @@ Durable Object はルーム内の全接続を1か所で保持し、メッセー�
 - **WebSocket Hibernation API** を使う（`ctx.acceptWebSocket`）。メッセージが無い間はインスタンスがメモリから退避され、課金対象の実行時間が発生しない
 - **参加者情報**（ニックネーム・アイコン・レバー値）は各 WebSocket の attachment（`serializeAttachment`）に保持する。ハイバネーションから復帰しても失われず、後から入室した参加者にも `init` で最新のレバー値を渡せる
 - **お題**は SQLite ストレージ（`ctx.storage`）に保存する
-- **自動削除**: 最後の参加者が退室してから 30 日間だれも接続しなければ、Alarm でストレージを全削除する
+- **ルームの削除は行わない**: 1ルームあたりの保存データは `created` フラグとお題（最大100文字）だけで、数百バイト程度。無料枠のストレージ上限に対して十分小さいため、削除処理は設けていない
+
+### 使わないルームを削除したくなった場合
+
+Durable Object の **Alarm**（インスタンスごとに1つ設定できるタイマー。指定時刻になると `alarm()` メソッドが呼ばれる）を使う。
+`worker/index.ts` の `Room` クラスに以下を追加する。
+
+```ts
+/** 最後の参加者が抜けてからこの期間だれも来なければルームを削除する */
+const ROOM_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+// create() の最後: 一度も使われないルームも消えるようにする
+await this.ctx.storage.setAlarm(Date.now() + ROOM_TTL_MS);
+
+// webSocketMessage() の join 成功時: 使われているので削除予約を取り消す
+await this.ctx.storage.deleteAlarm();
+
+// handleLeave() の最後（async にする）: 最後の1人が抜けたら削除を予約する
+const remaining = this.ctx.getWebSockets().filter((s) => s !== ws);
+if (remaining.length === 0 && (await this.ctx.storage.get<boolean>('created'))) {
+  await this.ctx.storage.setAlarm(Date.now() + ROOM_TTL_MS);
+}
+
+// 指定時刻に呼ばれる。だれも接続していなければストレージを全削除する
+async alarm(): Promise<void> {
+  if (this.ctx.getWebSockets().length > 0) return;
+  await this.ctx.storage.deleteAll();
+}
+```
+
+`created` フラグも消えるため、削除後にそのルームURLへアクセスすると「ルームが見つかりません」になる。
 
 ## 画面構成
 

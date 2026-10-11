@@ -68,7 +68,7 @@ YouTubeチャンネル「[白黒つけない会議](https://www.youtube.com/@not
 - Cloudflare Workers の無料プランの範囲で恒久的に運用できること
   - 無料プランで使える SQLite バックエンドの Durable Object を使う
   - WebSocket Hibernation API により、メッセージが無い間は課金対象の実行時間が発生しない
-  - 一定期間（30日）使われなかったルームは Alarm で自動削除し、ストレージを圧迫しない
+  - ルームのデータ（お題など数百バイト程度）は削除しない。無料枠のストレージ上限に対して十分小さいため。削除が必要になった場合の手順は `docs/architecture.md` に記載
 
 ## マイルストーン
 

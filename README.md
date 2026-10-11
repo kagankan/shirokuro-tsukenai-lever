@@ -23,14 +23,23 @@ pnpm exec playwright test
 
 ## デプロイ
 
-### Worker
+### Worker（手動）
+
+初回のみ:
+
+1. [Cloudflare](https://dash.cloudflare.com/sign-up) のアカウントを作成する（無料プランでよい）
+2. ダッシュボードの「Workers & Pages」を一度開き、workers.dev のサブドメインを決める
+3. `pnpm wrangler login` でブラウザ認証する
+
+デプロイ（Worker のコードを変更したときに毎回）:
 
 ```sh
-pnpm wrangler login
 pnpm deploy:worker
 ```
 
-表示された `https://shirokuro-tsukenai-lever.<subdomain>.workers.dev` を `.env.production` の `VITE_API_URL` に設定してコミットする。
+Durable Object はデプロイ時に `wrangler.jsonc` の `migrations` に従って自動で作成されるので、ダッシュボードでの作業は不要。
+
+初回デプロイ後、表示された `https://shirokuro-tsukenai-lever.<subdomain>.workers.dev` を `.env.production` の `VITE_API_URL` に設定してコミットする。
 
 ### フロントエンド
 

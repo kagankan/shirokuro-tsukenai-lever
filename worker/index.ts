@@ -16,9 +16,6 @@ type Env = {
   ROOM: DurableObjectNamespace<Room>;
 };
 
-/** 最後の参加者が抜けてからこの期間だれも来なければルームを削除する */
-const ROOM_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 const CORS_HEADERS = {
@@ -48,7 +45,6 @@ export class Room extends DurableObject<Env> {
   /** ルーム作成（Worker から RPC で呼ばれる） */
   async create(): Promise<void> {
     await this.ctx.storage.put({ created: true, topic: '' });
-    await this.ctx.storage.setAlarm(Date.now() + ROOM_TTL_MS);
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -91,7 +87,6 @@ export class Room extends DurableObject<Env> {
         value: clampValue(msg.value),
       };
       ws.serializeAttachment(player);
-      await this.ctx.storage.deleteAlarm();
       const topic = (await this.ctx.storage.get<string>('topic')) ?? '';
       this.send(ws, { type: 'init', selfId: player.id, topic, players: [...others, player] });
       this.broadcast({ type: 'player_joined', player }, ws);
@@ -116,7 +111,7 @@ export class Room extends DurableObject<Env> {
   }
 
   async webSocketClose(ws: WebSocket, code: number, reason: string): Promise<void> {
-    await this.handleLeave(ws);
+    this.handleLeave(ws);
     try {
       ws.close(code, reason);
     } catch {
@@ -125,26 +120,15 @@ export class Room extends DurableObject<Env> {
   }
 
   async webSocketError(ws: WebSocket): Promise<void> {
-    await this.handleLeave(ws);
+    this.handleLeave(ws);
   }
 
-  /** 一定期間だれも接続しなかったルームのデータを消す */
-  async alarm(): Promise<void> {
-    if (this.ctx.getWebSockets().length > 0) return;
-    await this.ctx.storage.deleteAll();
-  }
-
-  private async handleLeave(ws: WebSocket): Promise<void> {
+  private handleLeave(ws: WebSocket): void {
     const self = ws.deserializeAttachment() as Player | null;
-    if (self) {
-      // 二重に通知しないよう attachment を消す
-      ws.serializeAttachment(null);
-      this.broadcast({ type: 'player_left', id: self.id }, ws);
-    }
-    const remaining = this.ctx.getWebSockets().filter((s) => s !== ws);
-    if (remaining.length === 0 && (await this.ctx.storage.get<boolean>('created'))) {
-      await this.ctx.storage.setAlarm(Date.now() + ROOM_TTL_MS);
-    }
+    if (!self) return;
+    // 二重に通知しないよう attachment を消す
+    ws.serializeAttachment(null);
+    this.broadcast({ type: 'player_left', id: self.id }, ws);
   }
 
   private joinedPlayers(exclude?: WebSocket): Player[] {
