@@ -66,7 +66,7 @@ export function RoomLayout({ topic, players, lever }: Props) {
         </div>
         <TopicInput {...topic} />
       </section>
-      <section className={mapSectionClass}>
+      <section className={mapSectionClass} aria-label="結果マップ">
         <ResultMap players={players} />
       </section>
       <section className={leverSectionClass}>
