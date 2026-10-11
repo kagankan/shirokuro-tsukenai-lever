@@ -78,7 +78,7 @@ test.describe('ルーム機能', () => {
 
     // 結果マップに初期値50が表示されること
     // ユーザーAのアイコン下の数値を確認（結果マップ内）
-    const mapSection = pageA.locator('.room-page__map');
+    const mapSection = pageA.getByRole('region', { name: '結果マップ' });
     await expect(mapSection.getByText('50').first()).toBeVisible();
 
     await ctxA.close();
@@ -112,7 +112,7 @@ test.describe('ルーム機能', () => {
     }
 
     // ユーザーAの結果マップでユーザーBの値が更新されること
-    const mapA = pageA.locator('.room-page__map');
+    const mapA = pageA.getByRole('region', { name: '結果マップ' });
     await expect(mapA.getByText('70')).toBeVisible({ timeout: REALTIME_TIMEOUT });
 
     await ctxA.close();
@@ -137,7 +137,7 @@ test.describe('ルーム機能', () => {
       await pageA.waitForTimeout(80);
     }
     // ユーザーA自身の結果マップに 70 が反映されること
-    const mapA = pageA.locator('.room-page__map');
+    const mapA = pageA.getByRole('region', { name: '結果マップ' });
     await expect(mapA.getByText('70')).toBeVisible({ timeout: REALTIME_TIMEOUT });
 
     // ユーザーBが後から入室
@@ -150,7 +150,7 @@ test.describe('ルーム機能', () => {
     await expect(pageB.getByText('ユーザーA')).toBeVisible({ timeout: REALTIME_TIMEOUT });
 
     // ユーザーBの結果マップにユーザーAの現在値「70」が表示されること（初期値50ではなく）
-    const mapB = pageB.locator('.room-page__map');
+    const mapB = pageB.getByRole('region', { name: '結果マップ' });
     await expect(mapB.getByText('70')).toBeVisible({ timeout: REALTIME_TIMEOUT });
 
     await ctxA.close();
