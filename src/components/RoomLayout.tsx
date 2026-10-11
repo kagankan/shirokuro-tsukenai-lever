@@ -54,7 +54,7 @@ type Props = {
 
 /**
  * ルーム画面のレイアウト。
- * Supabase 接続でもローカル state でも、必要なデータとハンドラを
+ * サーバー接続でもローカル state でも、必要なデータとハンドラを
  * props として渡すだけで利用できる純粋な見た目コンポーネント。
  */
 export function RoomLayout({ topic, players, lever }: Props) {

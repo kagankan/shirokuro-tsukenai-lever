@@ -51,8 +51,8 @@ YouTubeチャンネル「[白黒つけない会議](https://www.youtube.com/@not
 | ルーティング | なし（query paramで画面分岐） |
 | スタイリング | CSSファイル直置き |
 | 状態管理 | React標準（useState / useContext） |
-| バックエンド | Supabase (BaaS) |
-| リアルタイム通信 | Supabase Realtime |
+| バックエンド | Cloudflare Workers + Durable Objects（SQLite バックエンド） |
+| リアルタイム通信 | WebSocket（Durable Object の WebSocket Hibernation API） |
 | パッケージマネージャー | pnpm |
 | Linter/Formatter | Biome |
 | ホスティング | GitHub Pages |
@@ -60,40 +60,50 @@ YouTubeチャンネル「[白黒つけない会議](https://www.youtube.com/@not
 ### リアルタイム性
 
 - レバー操作の反映は低遅延（体感でほぼリアルタイム）
-- Supabase RealtimeのBroadcast機能を使用し、レバー位置の変更をpublish/subscribeする
-- レバー位置は高頻度で変わるため、DB書き込みは間引く or 最終値のみ永続化する
+- ルームごとの Durable Object が WebSocket を中継し、レバー位置の変更を他の参加者へ配信する
+- レバー位置は高頻度で変わるため、ストレージには書き込まず Durable Object のメモリ（WebSocket の attachment）上でのみ保持する
+
+### 運用コスト
+
+- Cloudflare Workers の無料プランの範囲で恒久的に運用できること
+  - 無料プランで使える SQLite バックエンドの Durable Object を使う
+  - WebSocket Hibernation API により、メッセージが無い間は課金対象の実行時間が発生しない
+  - 一定期間（30日）使われなかったルームは Alarm で自動削除し、ストレージを圧迫しない
 
 ## マイルストーン
 
-### M1: リアルタイム同期（Broadcastのみ）
+### M1: リアルタイム同期（Supabase 版）
 
 - ルーム作成・参加・お題設定の基本機能
 - レバー操作のリアルタイム同期（Broadcastのみ、永続化なし）
 - ページリロードするとレバー値はリセットされる
 
-### M2: レバー値の永続化
+### M2: 後発入室者へのレバー値同期
 
-- レバー値をDBに保存し、リロードしても復元できるようにする
-- 操作中は高頻度のためBroadcastで同期し、操作完了時にDBへ書き込む
+- 後から入室した参加者にも、既存メンバーの現在のレバー値を表示する
+
+### M3: Cloudflare Durable Objects への移行
+
+- Supabase（無料プランは非アクティブで一時停止される）から、無料で恒久運用できる Cloudflare Workers + Durable Objects に移行する
 
 ### 認証・セキュリティ
 
 - ユーザー認証は設けない
-- Supabaseの公開APIキーをフロントエンドに埋め込む（RLSは全操作許可）
+- Worker の API は誰でも叩ける（認証なし）
 - ルームURLを知っている人のみがアクセス可能（URLの推測困難性で担保）
 
-#### フロントエンドから直接DB操作するリスクについて
+#### 認証なしの API を公開するリスクについて
 
-公開APIキーは誰でも取得できる情報であり、知識のある人なら直接APIを叩いてDB操作が可能。以下の理由からこのリスクを許容する:
+知識のある人なら直接 Worker の API を叩いてお題やレバー値を操作できる。以下の理由からこのリスクを許容する:
 
 - **UUIDの推測困難性**: ルームIDはUUID v4のため、他人のルームを総当たりで特定するのは現実的に不可能
 - **データの機密性がない**: 個人利用のファンメイドアプリであり、お題やレバー値を改ざんされても実害がない
 - **手軽さを優先**: ログイン不要で即座に使えることが要件。認証を入れると利便性が大きく下がる
 
-将来的に必要になれば、Supabaseの匿名認証（Anonymous Sign-In）を導入してRLSを厳密化できる。
+入力値（お題・ニックネームの長さ、レバー値の範囲）は Durable Object 側で検証・丸める。
 
 ### デプロイ
 
-- GitHub Pagesで静的サイトとしてホスティング
-- フロントエンドからSupabase APIに直接接続（サーバーサイド不要）
+- フロントエンドは GitHub Pages で静的サイトとしてホスティング
+- バックエンドは Cloudflare Workers（workers.dev）にデプロイし、フロントエンドから `VITE_API_URL` で接続する
 - ルーティングライブラリは使用しない。`?room={id}` の有無で画面を分岐する

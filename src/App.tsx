@@ -12,7 +12,7 @@ function App() {
   const { roomId, setRoomId } = useRoomId();
   const [player, setPlayer] = useState<PlayerInfo | null>(null);
 
-  // ?preview を付けると Supabase 抜きで UI だけ表示する
+  // ?preview を付けると サーバー抜きで UI だけ表示する
   if (isPreviewMode) {
     return <PreviewPage />;
   }

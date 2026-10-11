@@ -100,3 +100,17 @@ Broadcast はサーバーに履歴を残さないため、後から入室した�
 最新レバー値を受信できない。これを解決する。
 
 - [x] 13-1. presence の join イベントで既存メンバーが自分の現在値を再 broadcast する
+
+---
+
+## M3: Cloudflare Durable Objects への移行
+
+依存: M2 完了
+
+Supabase 無料プランは一定期間アクセスが無いとプロジェクトが一時停止されるため、
+無料で恒久運用できる Cloudflare Workers + Durable Objects に移行する。
+
+- [x] 14-1. Worker + Durable Object（SQLite バックエンド、WebSocket Hibernation）の実装
+- [x] 14-2. フロントエンドを WebSocket 接続に置き換え、Supabase 依存を削除
+- [x] 14-3. E2E テストを wrangler dev に対して実行できるようにする
+- [ ] 14-4. Cloudflare へデプロイし、`.env.production` の `VITE_API_URL` を設定（手動）

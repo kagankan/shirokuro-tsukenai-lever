@@ -3,70 +3,70 @@
 ## システム構成
 
 ```
-+-------------------+       +-------------------+
-|   GitHub Pages    |       |     Supabase      |
-|                   |       |                   |
-|  React SPA        | <---> |  Realtime         |
-|  (静的ホスティング) |       |  (Broadcast)      |
-|                   |       |                   |
-|                   | <---> |  Database          |
-|                   |       |  (PostgreSQL)     |
-+-------------------+       +-------------------+
++-------------------+          +-------------------------------+
+|   GitHub Pages    |          |      Cloudflare Workers       |
+|                   |   HTTP   |                               |
+|  React SPA        | -------> |  Worker (ルーティング)         |
+|  (静的ホスティング) |          |     |                         |
+|                   | WebSocket|     v                         |
+|                   | <------> |  Durable Object "Room"        |
+|                   |          |  (1ルーム = 1インスタンス)      |
+|                   |          |  - WebSocket 中継             |
+|                   |          |  - SQLite ストレージ (お題)    |
++-------------------+          +-------------------------------+
 ```
 
-参加者のブラウザ同士がSupabase Realtimeを介してリアルタイムに通信する。
-ルームやお題の永続データはSupabase Database（PostgreSQL）に保存する。
+参加者のブラウザは、ルームごとの Durable Object と WebSocket で接続する。
+Durable Object はルーム内の全接続を1か所で保持し、メッセージを他の参加者へ中継する。
+お題は Durable Object の SQLite ストレージに永続化する。
 
-## リアルタイム通信の設計
+## API（Worker）
 
-### レバー操作（高頻度・一時的データ）
+| メソッド | パス | 説明 |
+|---------|------|------|
+| POST | `/api/rooms` | ルームを作成し `{ id }` を返す |
+| GET (WebSocket) | `/api/rooms/{id}/ws` | ルームに WebSocket で接続する |
+| GET | `/api/health` | ヘルスチェック（E2E テストの起動待ちに使用） |
 
-Supabase RealtimeのBroadcast機能を使用する。
+ルームIDは UUID v4。`env.ROOM.getByName(id)` で ID ごとに一意な Durable Object インスタンスを得る。
+作成されていない ID への接続は `not_found` を返して切断する。
 
-- チャンネル名: `room:{room_id}`
-- イベント: `lever_update`
-- ペイロード: `{ player: number, value: number }`
+## WebSocket プロトコル
 
-Broadcastはサーバーに永続化されないため、高頻度のレバー操作に適している。
-レバー操作中はthrottleして送信頻度を制限する（目安: 50ms間隔）。
+定義は `src/lib/protocol.ts`（フロントエンドと Worker で共有）。
 
-### お題の変更（低頻度・永続データ）
+### クライアント → サーバー
 
-Supabase DatabaseへのUPDATEと、Realtime（Postgres Changes）によるリアルタイム反映を組み合わせる。
+| type | ペイロード | 説明 |
+|------|-----------|------|
+| `join` | `nickname, iconId, value` | 接続直後に送る。参加者として登録される |
+| `lever` | `value` | レバー値の変更（50ms で throttle） |
+| `topic` | `topic` | お題の変更（入力欄の blur 時。Last Write Wins） |
 
-- テーブル: `rooms`
-- カラム: `topic`
-- 変更検知: Supabase RealtimeのPostgres Changesでsubscribe
+### サーバー → クライアント
 
-### 参加者の接続管理
+| type | ペイロード | 説明 |
+|------|-----------|------|
+| `init` | `selfId, topic, players` | 参加成功。現在のお題と全参加者（レバー値含む） |
+| `not_found` / `full` | - | ルームが存在しない / 満員（8人）。直後に close |
+| `player_joined` | `player` | 他の参加者が入室 |
+| `player_left` | `id` | 他の参加者が退室 |
+| `lever` | `id, value` | 他の参加者のレバー値変更 |
+| `topic` | `topic` | 他の参加者によるお題変更 |
 
-Supabase RealtimeのPresence機能を使用する。
+サーバーは送信者自身にはエコーしない。
 
-- 参加時にニックネーム・アイコンとともにPresenceでtrackする
-- 離脱を検知して参加者リストから除外する
-- 上限人数（8人）に達したルームには参加できない制御を行う
+### keepalive・再接続
 
-## データベース設計
+- クライアントは 30 秒ごとに `ping` を送り、Durable Object はランタイムの自動応答（`setWebSocketAutoResponse`）で `pong` を返す。自動応答は Durable Object を起こさない
+- 切断時は指数バックオフ（最大10秒）で再接続し、現在のレバー値で `join` し直す
 
-### rooms テーブル
+## Durable Object "Room" の設計
 
-| カラム | 型 | 説明 |
-|-------|-----|------|
-| id | uuid (PK) | ルームID |
-| topic | text | 現在のお題 |
-| created_at | timestamptz | 作成日時 |
-
-ルームURLは `https://<host>/?room={id}` の形式とする。
-
-ルーティングライブラリは使用しない。画面はトップとルームの2つだけであり、query paramの有無で分岐すれば十分なため。GitHub Pagesでもルートパスへのリクエストとなるため問題なく動作する。
-
-### RLS (Row Level Security)
-
-- `rooms`テーブルは公開APIキーで読み書き可能にする（ルームIDを知っている前提）
-- INSERT: 誰でも作成可能
-- SELECT: 誰でも読み取り可能（IDを知っていれば）
-- UPDATE: 誰でも更新可能（topicの変更用）
-- DELETE: 不要（ルームの削除機能は設けない。不要データは定期的にクリーンアップする運用想定）
+- **WebSocket Hibernation API** を使う（`ctx.acceptWebSocket`）。メッセージが無い間はインスタンスがメモリから退避され、課金対象の実行時間が発生しない
+- **参加者情報**（ニックネーム・アイコン・レバー値）は各 WebSocket の attachment（`serializeAttachment`）に保持する。ハイバネーションから復帰しても失われず、後から入室した参加者にも `init` で最新のレバー値を渡せる
+- **お題**は SQLite ストレージ（`ctx.storage`）に保存する
+- **自動削除**: 最後の参加者が退室してから 30 日間だれも接続しなければ、Alarm でストレージを全削除する
 
 ## 画面構成
 
@@ -111,6 +111,8 @@ Supabase RealtimeのPresence機能を使用する。
 - **上部**: お題の表示・編集エリア
 - **中央（結果マップ）**: アーチ状のスケール上に全員のアイコン・ニックネーム・数値を配置。値(0〜100)に応じてアーチ上の位置が決まる
 - **下部（自分のレバー）**: 自分が操作するレバーUI。円弧軌道でドラッグ/タッチ操作
+
+ルーティングライブラリは使用しない。画面はトップとルームの2つだけであり、query paramの有無で分岐すれば十分なため。GitHub Pagesでもルートパスへのリクエストとなるため問題なく動作する。
 
 ## レバーUIの実装方針
 

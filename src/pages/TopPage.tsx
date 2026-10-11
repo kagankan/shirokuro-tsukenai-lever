@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { css } from '../../styled-system/css';
-import { supabase } from '../lib/supabase';
+import { createRoom } from '../lib/api';
 
 type Props = {
   onCreated: (roomId: string) => void;
@@ -14,20 +14,14 @@ export function TopPage({ onCreated }: Props) {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase
-      .from('rooms')
-      .insert({ topic: '' })
-      .select()
-      .single();
-
-    setLoading(false);
-
-    if (err || !data) {
+    try {
+      const id = await createRoom();
+      onCreated(id);
+    } catch {
       setError('ルームの作成に失敗しました。もう一度お試しください。');
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    onCreated(data.id);
   };
 
   return (

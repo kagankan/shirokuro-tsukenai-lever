@@ -10,29 +10,31 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "prepare": "panda codegen",
-    "gen:types": "SUPABASE_ACCESS_TOKEN=\"$(pass show supabase/access-token)\" supabase gen types typescript --project-id vsqgixmesuaabifdbbra --schema public > src/lib/database.types.ts"
+    "dev:worker": "wrangler dev",
+    "deploy:worker": "wrangler deploy"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.103.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.12",
+    "@cloudflare/workers-types": "^5.20261011.1",
     "@pandacss/dev": "^1.10.0",
     "@playwright/test": "^1.59.1",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
-    "supabase": "^2.95.3",
     "typescript": "~6.0.2",
-    "vite": "^8.0.4"
+    "vite": "^8.0.4",
+    "wrangler": "^4.149.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
-      "supabase"
+      "workerd",
+      "sharp"
     ]
   }
 }

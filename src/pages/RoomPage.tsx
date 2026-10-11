@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { css } from '../../styled-system/css';
 import type { PlayerSlot } from '../components/ResultMap';
 import { RoomLayout } from '../components/RoomLayout';
-import { usePresence } from '../hooks/usePresence';
-import { useRoom } from '../hooks/useRoom';
+import { useRoomSocket } from '../hooks/useRoomSocket';
 import { useTopicSync } from '../hooks/useTopicSync';
+import { DEFAULT_ICON, ICON_PRESETS, type IconId } from '../lib/icons';
 import type { PlayerInfo } from '../lib/types';
 
 type Props = {
@@ -21,59 +21,70 @@ const stateMessageClass = css({
   color: 'textMuted',
 });
 
-export function RoomPage({ roomId, player }: Props) {
-  const roomState = useRoom(roomId);
-
-  if (roomState.status === 'loading') {
-    return <div className={stateMessageClass}>読み込み中…</div>;
-  }
-
-  if (roomState.status === 'error') {
-    return <div className={stateMessageClass}>{roomState.message}</div>;
-  }
-
-  return <RoomBody roomId={roomId} initialTopic={roomState.room.topic} player={player} />;
+function toIconId(id: string): IconId {
+  return ICON_PRESETS.some((icon) => icon.id === id) ? (id as IconId) : DEFAULT_ICON;
 }
 
-type RoomBodyProps = {
-  roomId: string;
-  initialTopic: string;
-  player: PlayerInfo;
-};
-
-function RoomBody({ roomId, initialTopic, player }: RoomBodyProps) {
+export function RoomPage({ roomId, player }: Props) {
   const [leverValue, setLeverValue] = useState(50);
-  const { state: presenceState, broadcastLever } = usePresence(roomId, {
+  const { state, sendLever, sendTopic } = useRoomSocket(roomId, {
     nickname: player.nickname,
     iconId: player.iconId,
     value: leverValue,
   });
-  const { topic, setTopic, inputRef, handleBlur } = useTopicSync(roomId, initialTopic);
 
-  if (presenceState.status === 'full') {
+  if (state.status === 'connecting') {
+    return <div className={stateMessageClass}>読み込み中…</div>;
+  }
+
+  if (state.status === 'not_found') {
+    return <div className={stateMessageClass}>ルームが見つかりません</div>;
+  }
+
+  if (state.status === 'full') {
     return <div className={stateMessageClass}>このルームは満員です（最大8名）</div>;
   }
 
   const handleLeverChange = (value: number) => {
     setLeverValue(value);
-    broadcastLever(value);
+    sendLever(value);
   };
 
-  const players: PlayerSlot[] =
-    presenceState.status === 'joined'
-      ? presenceState.players.map((p) => ({
-          id: p.presenceKey,
-          nickname: p.nickname,
-          iconId: p.iconId,
-          value: p.value,
-        }))
-      : [{ id: 'me', nickname: player.nickname, iconId: player.iconId, value: leverValue }];
+  // 自分の値はサーバーを経由せずローカルの値を使う（操作の遅延を避けるため）
+  const players: PlayerSlot[] = state.players.map((p) => ({
+    id: p.id,
+    nickname: p.nickname,
+    iconId: toIconId(p.iconId),
+    value: p.id === state.selfId ? leverValue : p.value,
+  }));
+
+  return (
+    <RoomBody
+      remoteTopic={state.topic}
+      sendTopic={sendTopic}
+      players={players}
+      leverValue={leverValue}
+      onLeverChange={handleLeverChange}
+    />
+  );
+}
+
+type RoomBodyProps = {
+  remoteTopic: string;
+  sendTopic: (topic: string) => void;
+  players: PlayerSlot[];
+  leverValue: number;
+  onLeverChange: (value: number) => void;
+};
+
+function RoomBody({ remoteTopic, sendTopic, players, leverValue, onLeverChange }: RoomBodyProps) {
+  const { topic, setTopic, inputRef, handleBlur } = useTopicSync(remoteTopic, sendTopic);
 
   return (
     <RoomLayout
       topic={{ value: topic, onChange: setTopic, onBlur: handleBlur, inputRef }}
       players={players}
-      lever={{ value: leverValue, onChange: handleLeverChange }}
+      lever={{ value: leverValue, onChange: onLeverChange }}
     />
   );
 }

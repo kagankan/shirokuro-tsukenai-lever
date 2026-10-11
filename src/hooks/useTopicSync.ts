@@ -1,37 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '../lib/supabase';
 
 /**
- * ルームのお題を Supabase と同期する hook。
- * - 初期値からローカル state を立ち上げ、Postgres Changes で他人の更新を受信する
+ * ルームのお題をサーバーと同期する hook。
+ * - サーバーから届いた最新値をローカル state に反映する
  * - 自分が編集中（input にフォーカス中）は受信値を反映しない
- * - blur 時に最終値を DB へ書き戻す
+ * - blur 時に最終値をサーバーへ送る（Last Write Wins）
  */
-export function useTopicSync(roomId: string, initialTopic: string) {
-  const [topic, setTopic] = useState(initialTopic);
+export function useTopicSync(remoteTopic: string, sendTopic: (topic: string) => void) {
+  const [topic, setTopic] = useState(remoteTopic);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`room-topic:${roomId}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
-        (payload) => {
-          if (document.activeElement !== inputRef.current) {
-            setTopic((payload.new as { topic: string }).topic);
-          }
-        },
-      )
-      .subscribe();
+    if (document.activeElement !== inputRef.current) {
+      setTopic(remoteTopic);
+    }
+  }, [remoteTopic]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [roomId]);
-
-  const handleBlur = async () => {
-    await supabase.from('rooms').update({ topic }).eq('id', roomId);
+  const handleBlur = () => {
+    if (topic !== remoteTopic) sendTopic(topic);
   };
 
   return { topic, setTopic, inputRef, handleBlur };
