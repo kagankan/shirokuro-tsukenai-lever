@@ -25,7 +25,7 @@ function App() {
     return <JoinPage onJoin={setPlayer} />;
   }
 
-  return <RoomPage roomId={roomId} player={player} />;
+  return <RoomPage roomId={roomId} player={player} onPlayerChange={setPlayer} />;
 }
 
 export default App;
