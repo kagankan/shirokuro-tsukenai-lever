@@ -113,4 +113,4 @@ Supabase 無料プランは一定期間アクセスが無いとプロジェク�
 - [x] 14-1. Worker + Durable Object（SQLite バックエンド、WebSocket Hibernation）の実装
 - [x] 14-2. フロントエンドを WebSocket 接続に置き換え、Supabase 依存を削除
 - [x] 14-3. E2E テストを wrangler dev に対して実行できるようにする
-- [ ] 14-4. Cloudflare へデプロイし、`.env.production` の `VITE_API_URL` を設定（手動）
+- [x] 14-4. Cloudflare へデプロイし、`.env.production` の `VITE_API_URL` を設定（手動）
