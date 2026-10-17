@@ -41,9 +41,45 @@ export function TopPage({ onCreated }: Props) {
       })}
     >
       <h1 className={css({ fontSize: '2rem', lineHeight: 1.2 })}>白黒つけないレバー</h1>
-      <p className={css({ color: 'textMuted', maxWidth: '24em' })}>
-        お題に対して、みんながレバーで意見を表明するリアルタイム参加型ツール
-      </p>
+      <div
+        className={css({
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '3',
+          color: 'textMuted',
+          maxWidth: '24em',
+        })}
+      >
+        <p>
+          YouTubeチャンネル「白黒つけない会議」のファンによる非公式アプリです。
+          <br />
+          オンラインでお互いの意見を見せ合えます。
+        </p>
+        <ul className={css({ listStyle: 'none', fontSize: 'sm' })}>
+          <li>
+            本家サイト:{' '}
+            <a
+              href="https://cybozu.co.jp/not-shirokuro/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={css({ color: 'accent', textDecoration: 'underline' })}
+            >
+              白黒つけない会議
+            </a>
+          </li>
+          <li>
+            本家YouTubeチャンネル:{' '}
+            <a
+              href="https://youtube.com/@not_shirokuro"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={css({ color: 'accent', textDecoration: 'underline' })}
+            >
+              @not_shirokuro
+            </a>
+          </li>
+        </ul>
+      </div>
       <button
         type="button"
         onClick={handleCreateRoom}
