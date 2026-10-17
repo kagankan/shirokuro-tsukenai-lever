@@ -68,8 +68,8 @@ web_modules/
 # dotenv environment variable files
 .env
 .env.*
-!.env.example
 !.env.production
+!.env.development
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -159,3 +159,7 @@ playwright-report/
 ## Panda
 styled-system
 styled-system-studio
+
+## Cloudflare Workers
+.wrangler
+.dev.vars*

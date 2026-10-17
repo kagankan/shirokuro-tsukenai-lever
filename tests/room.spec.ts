@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const BASE_URL = 'http://localhost:5176/shirokuro-tsukenai-lever';
 
-// Supabase Realtime の接続待機タイムアウト。
+// WebSocket の接続待機タイムアウト。
 // 通常は数秒で同期するが、稀にジッターが出るので余裕を取る。
 // それでも失敗するケースは playwright の retries で吸収する。
 const REALTIME_TIMEOUT = 30_000;

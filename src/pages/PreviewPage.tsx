@@ -11,7 +11,7 @@ const OTHER_PLAYERS: Omit<PlayerSlot, 'value'>[] = [
 const OTHER_VALUES = [15, 70, 90];
 
 /**
- * Supabase 抜きで UI だけ確認するためのプレビュー画面。
+ * サーバー抜きで UI だけ確認するためのプレビュー画面。
  * URL に `?preview` を付けるとここが表示される。
  */
 export function PreviewPage() {
