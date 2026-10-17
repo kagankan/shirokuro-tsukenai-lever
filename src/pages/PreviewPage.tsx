@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { PlayerSlot } from '../components/ResultMap';
 import { RoomLayout } from '../components/RoomLayout';
+import type { PlayerInfo } from '../lib/types';
 
 // 自分以外のダミー参加者（さまざまな値で配置例を確認するため）
 const OTHER_PLAYERS: Omit<PlayerSlot, 'value'>[] = [
@@ -17,9 +18,10 @@ const OTHER_VALUES = [15, 70, 90];
 export function PreviewPage() {
   const [topic, setTopic] = useState('酔っ払いの失言は許すべき？');
   const [myValue, setMyValue] = useState(50);
+  const [me, setMe] = useState<PlayerInfo>({ nickname: 'アリス', iconId: 'cat' });
 
   const players: PlayerSlot[] = [
-    { id: 'me', nickname: 'アリス', iconId: 'cat', value: myValue },
+    { id: 'me', ...me, value: myValue },
     ...OTHER_PLAYERS.map((p, i) => ({ ...p, value: OTHER_VALUES[i] })),
   ];
 
@@ -28,6 +30,7 @@ export function PreviewPage() {
       topic={{ value: topic, onChange: setTopic }}
       players={players}
       lever={{ value: myValue, onChange: setMyValue }}
+      profile={{ player: me, onChange: setMe }}
     />
   );
 }

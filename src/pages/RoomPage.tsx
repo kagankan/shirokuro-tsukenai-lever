@@ -10,6 +10,7 @@ import type { PlayerInfo } from '../lib/types';
 type Props = {
   roomId: string;
   player: PlayerInfo;
+  onPlayerChange: (player: PlayerInfo) => void;
 };
 
 const stateMessageClass = css({
@@ -25,9 +26,9 @@ function toIconId(id: string): IconId {
   return ICON_PRESETS.some((icon) => icon.id === id) ? (id as IconId) : DEFAULT_ICON;
 }
 
-export function RoomPage({ roomId, player }: Props) {
+export function RoomPage({ roomId, player, onPlayerChange }: Props) {
   const [leverValue, setLeverValue] = useState(50);
-  const { state, sendLever, sendTopic } = useRoomSocket(roomId, {
+  const { state, sendLever, sendTopic, sendProfile } = useRoomSocket(roomId, {
     nickname: player.nickname,
     iconId: player.iconId,
     value: leverValue,
@@ -50,6 +51,12 @@ export function RoomPage({ roomId, player }: Props) {
     sendLever(value);
   };
 
+  const handleProfileChange = (next: PlayerInfo) => {
+    // App の state も更新し、再接続時の join で新しい値が使われるようにする
+    onPlayerChange(next);
+    sendProfile(next);
+  };
+
   // 自分の値はサーバーを経由せずローカルの値を使う（操作の遅延を避けるため）
   const players: PlayerSlot[] = state.players.map((p) => ({
     id: p.id,
@@ -65,6 +72,8 @@ export function RoomPage({ roomId, player }: Props) {
       players={players}
       leverValue={leverValue}
       onLeverChange={handleLeverChange}
+      player={player}
+      onProfileChange={handleProfileChange}
     />
   );
 }
@@ -75,9 +84,19 @@ type RoomBodyProps = {
   players: PlayerSlot[];
   leverValue: number;
   onLeverChange: (value: number) => void;
+  player: PlayerInfo;
+  onProfileChange: (player: PlayerInfo) => void;
 };
 
-function RoomBody({ remoteTopic, sendTopic, players, leverValue, onLeverChange }: RoomBodyProps) {
+function RoomBody({
+  remoteTopic,
+  sendTopic,
+  players,
+  leverValue,
+  onLeverChange,
+  player,
+  onProfileChange,
+}: RoomBodyProps) {
   const { topic, setTopic, inputRef, handleBlur } = useTopicSync(remoteTopic, sendTopic);
 
   return (
@@ -85,6 +104,7 @@ function RoomBody({ remoteTopic, sendTopic, players, leverValue, onLeverChange }
       topic={{ value: topic, onChange: setTopic, onBlur: handleBlur, inputRef }}
       players={players}
       lever={{ value: leverValue, onChange: onLeverChange }}
+      profile={{ player, onChange: onProfileChange }}
     />
   );
 }

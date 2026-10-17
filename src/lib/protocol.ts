@@ -21,7 +21,8 @@ export type Player = {
 export type ClientMessage =
   | { type: 'join'; nickname: string; iconId: string; value: number }
   | { type: 'lever'; value: number }
-  | { type: 'topic'; topic: string };
+  | { type: 'topic'; topic: string }
+  | { type: 'profile'; nickname: string; iconId: string };
 
 export type ServerMessage =
   | { type: 'init'; selfId: string; topic: string; players: Player[] }
@@ -29,6 +30,7 @@ export type ServerMessage =
   | { type: 'full' }
   | { type: 'player_joined'; player: Player }
   | { type: 'player_left'; id: string }
+  | { type: 'player_updated'; player: Player }
   | { type: 'lever'; id: string; value: number }
   | { type: 'topic'; topic: string };
 

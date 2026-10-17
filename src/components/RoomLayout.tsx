@@ -3,6 +3,7 @@ import { css } from '../../styled-system/css';
 import { CopyUrlButton } from './CopyUrlButton';
 import { Lever } from './Lever';
 import { LeverIcon } from './LeverIcon';
+import { ProfileButton } from './ProfileButton';
 import type { PlayerSlot } from './ResultMap';
 import { ResultMap } from './ResultMap';
 import { TopicInput } from './TopicInput';
@@ -62,14 +63,18 @@ const leverSectionClass = css({
   borderTop: '1px solid token(colors.border)',
   background: 'surface',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
+  gap: '3',
+  paddingBottom: '4',
 });
 
 type Props = {
   topic: ComponentProps<typeof TopicInput>;
   players: PlayerSlot[];
   lever: ComponentProps<typeof Lever>;
+  profile: ComponentProps<typeof ProfileButton>;
 };
 
 /**
@@ -77,7 +82,7 @@ type Props = {
  * サーバー接続でもローカル state でも、必要なデータとハンドラを
  * props として渡すだけで利用できる純粋な見た目コンポーネント。
  */
-export function RoomLayout({ topic, players, lever }: Props) {
+export function RoomLayout({ topic, players, lever, profile }: Props) {
   return (
     <div className={pageClass}>
       <header className={headerClass}>
@@ -98,6 +103,7 @@ export function RoomLayout({ topic, players, lever }: Props) {
       </section>
       <section className={leverSectionClass}>
         <Lever {...lever} />
+        <ProfileButton {...profile} />
       </section>
     </div>
   );

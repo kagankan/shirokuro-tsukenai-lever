@@ -29,6 +29,14 @@ function clampValue(value: unknown): number {
   return Math.min(100, Math.max(0, Math.round(n)));
 }
 
+function normalizeNickname(nickname: unknown): string {
+  return String(nickname).slice(0, MAX_NICKNAME_LENGTH);
+}
+
+function normalizeIconId(iconId: unknown): string {
+  return String(iconId).slice(0, 32);
+}
+
 /**
  * 1ルーム = 1インスタンスの Durable Object。
  * WebSocket Hibernation API を使い、メッセージが来ていない間はメモリから退避される。
@@ -82,8 +90,8 @@ export class Room extends DurableObject<Env> {
       }
       const player: Player = {
         id: crypto.randomUUID(),
-        nickname: String(msg.nickname).slice(0, MAX_NICKNAME_LENGTH),
-        iconId: String(msg.iconId).slice(0, 32),
+        nickname: normalizeNickname(msg.nickname),
+        iconId: normalizeIconId(msg.iconId),
         value: clampValue(msg.value),
       };
       ws.serializeAttachment(player);
@@ -100,6 +108,14 @@ export class Room extends DurableObject<Env> {
       self.value = clampValue(msg.value);
       ws.serializeAttachment(self);
       this.broadcast({ type: 'lever', id: self.id, value: self.value }, ws);
+      return;
+    }
+
+    if (msg.type === 'profile') {
+      self.nickname = normalizeNickname(msg.nickname);
+      self.iconId = normalizeIconId(msg.iconId);
+      ws.serializeAttachment(self);
+      this.broadcast({ type: 'player_updated', player: self }, ws);
       return;
     }
 

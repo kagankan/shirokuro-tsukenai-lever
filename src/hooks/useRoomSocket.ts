@@ -35,6 +35,12 @@ function reduce(prev: RoomState, msg: ServerMessage): RoomState {
         ...prev,
         players: [...prev.players.filter((p) => p.id !== msg.player.id), msg.player],
       };
+    case 'player_updated':
+      // 並び順（＝結果マップ上の重なり順）を変えないよう、その場で置き換える
+      return {
+        ...prev,
+        players: prev.players.map((p) => (p.id === msg.player.id ? msg.player : p)),
+      };
     case 'player_left':
       return { ...prev, players: prev.players.filter((p) => p.id !== msg.id) };
     case 'lever':
@@ -58,6 +64,7 @@ export function useRoomSocket(
   state: RoomState;
   sendLever: (value: number) => void;
   sendTopic: (topic: string) => void;
+  sendProfile: (profile: { nickname: string; iconId: string }) => void;
 } {
   const [state, setState] = useState<RoomState>({ status: 'connecting' });
   const wsRef = useRef<WebSocket | null>(null);
@@ -152,5 +159,21 @@ export function useRoomSocket(
     [send],
   );
 
-  return { state, sendLever, sendTopic };
+  const sendProfile = useCallback(
+    ({ nickname, iconId }: { nickname: string; iconId: string }) => {
+      send({ type: 'profile', nickname, iconId });
+      // サーバーはエコーしないので、手元の state も更新しておく。
+      // 切断中に変更しても、再接続時の join は selfRef（＝新しい値）で行われる
+      setState((prev) => {
+        if (prev.status !== 'joined') return prev;
+        return {
+          ...prev,
+          players: prev.players.map((p) => (p.id === prev.selfId ? { ...p, nickname, iconId } : p)),
+        };
+      });
+    },
+    [send],
+  );
+
+  return { state, sendLever, sendTopic, sendProfile };
 }
