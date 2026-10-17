@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 import { css } from '../../styled-system/css';
+import { CopyUrlButton } from './CopyUrlButton';
 import { Lever } from './Lever';
 import { LeverIcon } from './LeverIcon';
 import type { PlayerSlot } from './ResultMap';
@@ -14,6 +15,25 @@ const pageClass = css({
   display: 'flex',
   flexDirection: 'column',
   minHeight: 0,
+});
+
+const headerClass = css({
+  paddingY: '2',
+  paddingX: '5',
+  flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3',
+  borderBottom: '1px solid token(colors.border)',
+});
+
+const topLinkClass = css({
+  color: 'textMuted',
+  fontSize: 'sm',
+  textDecoration: 'none',
+  transition: 'color 0.15s ease',
+  _hover: { color: 'accent' },
 });
 
 const topicSectionClass = css({
@@ -60,6 +80,13 @@ type Props = {
 export function RoomLayout({ topic, players, lever }: Props) {
   return (
     <div className={pageClass}>
+      <header className={headerClass}>
+        {/* App が持つ参加情報の state もリセットされるよう、SPA 内の遷移ではなく通常のリンクにする */}
+        <a href={import.meta.env.BASE_URL} className={topLinkClass}>
+          ← トップへ
+        </a>
+        <CopyUrlButton />
+      </header>
       <section className={topicSectionClass}>
         <div className={topicIconWrapClass}>
           <LeverIcon />
