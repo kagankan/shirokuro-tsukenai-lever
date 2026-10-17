@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { css } from '../../styled-system/css';
+import { CopyUrlButton } from '../components/CopyUrlButton';
 import { DEFAULT_ICON, ICON_PRESETS } from '../lib/icons';
 import type { PlayerInfo } from '../lib/types';
 
@@ -10,14 +11,6 @@ type Props = {
 export function JoinPage({ onJoin }: Props) {
   const [nickname, setNickname] = useState('');
   const [iconId, setIconId] = useState<PlayerInfo['iconId']>(DEFAULT_ICON);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyUrl = async () => {
-    await navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nickname.trim()) return;
@@ -52,28 +45,7 @@ export function JoinPage({ onJoin }: Props) {
         <p className={css({ fontSize: 'sm', color: 'textMuted', textAlign: 'center' })}>
           URLを共有すると他のメンバーがルームに参加できます
         </p>
-        <button
-          type="button"
-          onClick={handleCopyUrl}
-          className={css({
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.5',
-            paddingY: '2',
-            paddingX: '3.5',
-            border: '1.5px solid token(colors.border)',
-            borderRadius: '999px',
-            background: 'surface',
-            color: copied ? 'accent' : 'textMuted',
-            fontSize: 'sm',
-            fontWeight: 600,
-            transition: 'color 0.15s ease, border-color 0.15s ease',
-            borderColor: copied ? 'accent' : 'border',
-            _hover: { borderColor: 'accent', color: 'accent' },
-          })}
-        >
-          {copied ? '✓ コピーしました' : 'URLをコピー'}
-        </button>
+        <CopyUrlButton />
       </div>
       <form
         onSubmit={handleSubmit}

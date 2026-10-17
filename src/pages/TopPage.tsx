@@ -103,6 +103,34 @@ export function TopPage({ onCreated }: Props) {
         {loading ? '作成中…' : 'ルームを作成'}
       </button>
       {error && <p className={css({ color: '#e53935', fontSize: 'sm' })}>{error}</p>}
+      <section
+        aria-labelledby="spec-heading"
+        className={css({
+          width: '100%',
+          maxWidth: '24em',
+          padding: '4',
+          border: '1px solid token(colors.border)',
+          borderRadius: '12px',
+          background: 'surface',
+          textAlign: 'left',
+        })}
+      >
+        <h2 id="spec-heading" className={css({ fontSize: 'md', marginBottom: '2' })}>
+          ツールの仕様
+        </h2>
+        <ul
+          className={css({
+            color: 'textMuted',
+            fontSize: 'sm',
+            paddingLeft: '5',
+            listStyle: 'disc',
+          })}
+        >
+          <li>URLを共有すると同じルームに参加できます</li>
+          <li>1ルーム最大8人まで参加できます</li>
+          <li>お題はサーバーに保存されます。名前は保存されません</li>
+        </ul>
+      </section>
     </main>
   );
 }
