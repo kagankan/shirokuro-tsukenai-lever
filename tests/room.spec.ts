@@ -249,3 +249,75 @@ test.describe('ルーム機能', () => {
     await ctxB.close();
   });
 });
+
+test.describe('お題', () => {
+  test('後から入室したユーザーにもお題が表示される', async ({ browser }) => {
+    const ctxA = await browser.newContext();
+    const pageA = await ctxA.newPage();
+    const roomUrl = await createRoom(pageA);
+    await joinRoom(pageA, 'ユーザーA');
+    await expect(resultMap(pageA).getByText('ユーザーA')).toBeVisible({
+      timeout: REALTIME_TIMEOUT,
+    });
+
+    // お題は blur 時に送信される
+    const topicA = pageA.getByRole('textbox', { name: 'お題' });
+    await topicA.fill('きのこの山はたけのこの里より美味しい');
+    await topicA.blur();
+
+    const ctxB = await browser.newContext();
+    const pageB = await ctxB.newPage();
+    await pageB.goto(roomUrl);
+    await joinRoom(pageB, 'ユーザーB');
+    await expect(pageB.getByRole('textbox', { name: 'お題' })).toHaveValue(
+      'きのこの山はたけのこの里より美味しい',
+      { timeout: REALTIME_TIMEOUT },
+    );
+
+    await ctxA.close();
+    await ctxB.close();
+  });
+
+  test('全員の接続が切れても、再接続時に手元のお題で復元される', async ({ browser }) => {
+    const ctxA = await browser.newContext();
+    const pageA = await ctxA.newPage();
+    // サーバー側から接続を切れるよう、WebSocket を Playwright 経由で中継する
+    const servers: import('@playwright/test').WebSocketRoute[] = [];
+    await pageA.routeWebSocket(/\/ws$/, (ws) => {
+      servers.push(ws.connectToServer());
+    });
+    const roomUrl = await createRoom(pageA);
+    await joinRoom(pageA, 'ユーザーA');
+    await expect(resultMap(pageA).getByText('ユーザーA')).toBeVisible({
+      timeout: REALTIME_TIMEOUT,
+    });
+
+    const topicA = pageA.getByRole('textbox', { name: 'お題' });
+    await topicA.fill('目玉焼きには醤油');
+    await topicA.blur();
+
+    // ルーム唯一の参加者である A の接続を切る（＝サーバーからお題が消える）
+    const connectionCount = servers.length;
+    for (const server of servers) await server.close();
+    // 再接続されるのを待つ
+    await expect
+      .poll(() => servers.length, { timeout: REALTIME_TIMEOUT })
+      .toBeGreaterThan(connectionCount);
+    await expect(resultMap(pageA).getByText('ユーザーA')).toBeVisible({
+      timeout: REALTIME_TIMEOUT,
+    });
+    await expect(topicA).toHaveValue('目玉焼きには醤油');
+
+    // 再接続後に入室した B にも、復元されたお題が届く
+    const ctxB = await browser.newContext();
+    const pageB = await ctxB.newPage();
+    await pageB.goto(roomUrl);
+    await joinRoom(pageB, 'ユーザーB');
+    await expect(pageB.getByRole('textbox', { name: 'お題' })).toHaveValue('目玉焼きには醤油', {
+      timeout: REALTIME_TIMEOUT,
+    });
+
+    await ctxA.close();
+    await ctxB.close();
+  });
+});

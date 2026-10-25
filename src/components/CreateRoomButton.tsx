@@ -64,7 +64,7 @@ export function CreateRoomButton({ onCreated }: Props) {
           <li>ルームを作成し、URLを共有すると同じルームに参加できます</li>
           <li>全員のレバーの値がリアルタイムに共有されます</li>
           <li>1ルーム最大8人まで参加できます</li>
-          <li>お題はサーバーに保存されます。名前は保存されません</li>
+          <li>お題や名前はサーバーに保存されません。全員が退室するとお題は消えます</li>
         </ul>
         <button
           type="button"
