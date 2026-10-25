@@ -20,10 +20,11 @@ let current: AudioBufferSourceNode | null = null;
 
 function readEnabled(): boolean {
   try {
-    return localStorage.getItem(ENABLED_STORAGE_KEY) !== 'false';
+    // 既定はオフ。オンにしたことがある端末だけ鳴らす
+    return localStorage.getItem(ENABLED_STORAGE_KEY) === 'true';
   } catch {
-    // プライベートブラウズなどで localStorage が使えない場合は既定のオン
-    return true;
+    // プライベートブラウズなどで localStorage が使えない場合は既定のオフ
+    return false;
   }
 }
 
