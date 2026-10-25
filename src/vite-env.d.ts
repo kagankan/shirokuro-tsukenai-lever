@@ -7,3 +7,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** vite/sndSprite.ts が snd-lib のスプライトから切り出した効果音の URL */
+declare module 'snd-sprite:*' {
+  const url: string;
+  export default url;
+}
