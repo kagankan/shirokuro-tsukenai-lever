@@ -4,14 +4,9 @@
   "main": "worker/index.ts",
   "compatibility_date": "2026-10-01",
   "durable_objects": {
-    "bindings": [{ "name": "ROOM", "class_name": "LeverRoom" }]
+    "bindings": [{ "name": "ROOM", "class_name": "Room" }]
   },
   // 無料プランでは SQLite バックエンドの Durable Object のみ利用可能
-  "migrations": [
-    { "tag": "v1", "new_sqlite_classes": ["Room"] },
-    // お題をストレージに保存しないようにした際、旧クラスを削除して保存済みのお題を全て消した。
-    // deleted_classes を指定すると、そのクラスの全インスタンスとストレージが削除される
-    { "tag": "v2", "deleted_classes": ["Room"], "new_sqlite_classes": ["LeverRoom"] }
-  ],
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
   "observability": { "enabled": true }
 }

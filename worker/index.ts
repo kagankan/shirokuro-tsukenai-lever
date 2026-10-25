@@ -13,7 +13,7 @@ import {
 } from '../src/lib/protocol';
 
 type Env = {
-  ROOM: DurableObjectNamespace<LeverRoom>;
+  ROOM: DurableObjectNamespace<Room>;
 };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -57,7 +57,7 @@ type Attachment = {
  * ストレージにはルームの存在を示す created フラグだけを置く。
  * そのため全員の接続が切れるとお題は消える（再接続時に join の topic で復元される）。
  */
-export class LeverRoom extends DurableObject<Env> {
+export class Room extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     // ping には DO を起こさずランタイムが自動で pong を返す
