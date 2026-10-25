@@ -5,6 +5,7 @@ import { LeverIcon } from './LeverIcon';
 import { ProfileButton } from './ProfileButton';
 import type { PlayerSlot } from './ResultMap';
 import { ResultMap } from './ResultMap';
+import { SoundToggleButton } from './SoundToggleButton';
 import { TopicInput } from './TopicInput';
 
 const pageClass = css({
@@ -49,7 +50,15 @@ const mapSectionClass = css({
   justifyContent: 'center',
 });
 
+const soundToggleWrapClass = css({
+  position: 'absolute',
+  top: '2',
+  right: '3',
+  zIndex: 1,
+});
+
 const leverSectionClass = css({
+  position: 'relative',
   flexShrink: 0,
   borderTop: '1px solid token(colors.border)',
   background: 'surface',
@@ -90,6 +99,9 @@ export function RoomLayout({ header, topic, players, lever, profile }: Props) {
         <ResultMap players={players} />
       </section>
       <section className={leverSectionClass}>
+        <div className={soundToggleWrapClass}>
+          <SoundToggleButton />
+        </div>
         <Lever {...lever} />
         {profile && <ProfileButton {...profile} />}
       </section>

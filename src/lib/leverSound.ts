@@ -10,9 +10,35 @@
  */
 import leverSoundUrl from 'snd-sprite:03/transition_down';
 
+/** オン/オフの設定を端末ごとに覚えておく localStorage のキー */
+const ENABLED_STORAGE_KEY = 'leverSoundEnabled';
+
+let enabled = readEnabled();
 let ctx: AudioContext | null = null;
 let bufferPromise: Promise<AudioBuffer | null> | null = null;
 let current: AudioBufferSourceNode | null = null;
+
+function readEnabled(): boolean {
+  try {
+    return localStorage.getItem(ENABLED_STORAGE_KEY) !== 'false';
+  } catch {
+    // プライベートブラウズなどで localStorage が使えない場合は既定のオン
+    return true;
+  }
+}
+
+export function isLeverSoundEnabled(): boolean {
+  return enabled;
+}
+
+export function setLeverSoundEnabled(value: boolean): void {
+  enabled = value;
+  try {
+    localStorage.setItem(ENABLED_STORAGE_KEY, String(value));
+  } catch {
+    // 保存できなくてもこのページを開いている間は設定が効く
+  }
+}
 
 function loadBuffer(audio: AudioContext): Promise<AudioBuffer | null> {
   bufferPromise ??= fetch(leverSoundUrl)
@@ -28,6 +54,7 @@ function loadBuffer(audio: AudioContext): Promise<AudioBuffer | null> {
 
 /** ユーザー操作の開始時に呼び、AudioContext の準備と音源の読み込みを始める */
 export function prepareLeverSound(): void {
+  if (!enabled) return;
   if (!ctx) {
     if (typeof AudioContext === 'undefined') return;
     ctx = new AudioContext();
@@ -37,7 +64,7 @@ export function prepareLeverSound(): void {
 }
 
 export async function playLeverSound(): Promise<void> {
-  if (!ctx) return;
+  if (!enabled || !ctx) return;
   const buffer = await loadBuffer(ctx);
   if (!buffer) return;
 
