@@ -1,9 +1,10 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { css } from '../../styled-system/css';
 
 const MIN_ANGLE = -60; // value=0
 const MAX_ANGLE = 60; // value=100
-const KEY_STEP = 5;
+/** レバー値の刻み幅 */
+const VALUE_STEP = 5;
 
 // 論理座標系（CSSの px と一致）
 const STAGE_W = 280;
@@ -22,7 +23,12 @@ function valueToAngle(value: number): number {
 
 function angleToValue(angle: number): number {
   const clamped = Math.max(MIN_ANGLE, Math.min(MAX_ANGLE, angle));
-  return Math.round(((clamped - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE)) * 100);
+  const raw = ((clamped - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE)) * 100;
+  return Math.round(raw / VALUE_STEP) * VALUE_STEP;
+}
+
+function clampAngle(angle: number): number {
+  return Math.max(MIN_ANGLE, Math.min(MAX_ANGLE, angle));
 }
 
 type Props = {
@@ -33,8 +39,19 @@ type Props = {
 export function Lever({ value, onChange }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+  // ドラッグ中は値を5刻みにしつつ、見た目のアームは指に追従させて滑らかに動かす
+  const [dragAngle, setDragAngle] = useState<number | null>(null);
 
-  const angleDeg = valueToAngle(value);
+  const angleDeg = dragAngle ?? valueToAngle(value);
+
+  const updateFromPointer = useCallback(
+    (angle: number) => {
+      setDragAngle(clampAngle(angle));
+      const next = angleToValue(angle);
+      if (next !== value) onChange(next);
+    },
+    [value, onChange],
+  );
 
   const computeAngleFromPointer = useCallback((clientX: number, clientY: number): number => {
     const stage = stageRef.current;
@@ -51,29 +68,29 @@ export function Lever({ value, onChange }: Props) {
     (e: React.PointerEvent<HTMLDivElement>) => {
       dragging.current = true;
       e.currentTarget.setPointerCapture(e.pointerId);
-      const angle = computeAngleFromPointer(e.clientX, e.clientY);
-      onChange(angleToValue(angle));
+      updateFromPointer(computeAngleFromPointer(e.clientX, e.clientY));
     },
-    [computeAngleFromPointer, onChange],
+    [computeAngleFromPointer, updateFromPointer],
   );
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (!dragging.current) return;
-      const angle = computeAngleFromPointer(e.clientX, e.clientY);
-      onChange(angleToValue(angle));
+      updateFromPointer(computeAngleFromPointer(e.clientX, e.clientY));
     },
-    [computeAngleFromPointer, onChange],
+    [computeAngleFromPointer, updateFromPointer],
   );
 
   const handlePointerUp = useCallback(() => {
     dragging.current = false;
+    // 指を離したら、アームを5刻みの値の位置へ戻す（transition でアニメーション）
+    setDragAngle(null);
   }, []);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') onChange(Math.max(0, value - KEY_STEP));
-      else if (e.key === 'ArrowRight') onChange(Math.min(100, value + KEY_STEP));
+      if (e.key === 'ArrowLeft') onChange(Math.max(0, value - VALUE_STEP));
+      else if (e.key === 'ArrowRight') onChange(Math.min(100, value + VALUE_STEP));
     },
     [value, onChange],
   );
@@ -179,7 +196,11 @@ export function Lever({ value, onChange }: Props) {
           </div>
           {/* レバーアーム */}
           <div
-            style={{ transform: `rotate(${angleDeg}deg)` }}
+            style={{
+              transform: `rotate(${angleDeg}deg)`,
+              // ドラッグ中は指に遅れず追従させ、それ以外（離したとき・キー操作）はスナップをアニメーション
+              transition: dragAngle === null ? 'transform 0.12s ease-out' : 'none',
+            }}
             className={css({
               position: 'absolute',
               top: 0,
