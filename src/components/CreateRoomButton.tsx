@@ -1,0 +1,95 @@
+import { useRef, useState } from 'react';
+import { css } from '../../styled-system/css';
+import { createRoom } from '../lib/api';
+import { Modal } from './Modal';
+
+type Props = {
+  onCreated: (roomId: string) => void;
+};
+
+/**
+ * 「みんなで遊ぶ」ボタン。押すとオンラインで遊ぶ方法の説明とルーム作成ボタンをモーダルで表示する。
+ */
+export function CreateRoomButton({ onCreated }: Props) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const close = () => dialogRef.current?.close();
+
+  const handleCreateRoom = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const id = await createRoom();
+      close();
+      onCreated(id);
+    } catch {
+      setError('ルームの作成に失敗しました。もう一度お試しください。');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => dialogRef.current?.showModal()}
+        className={css({
+          paddingY: '2',
+          paddingX: '3.5',
+          border: '1.5px solid token(colors.accent)',
+          borderRadius: '999px',
+          background: 'surface',
+          color: 'accent',
+          fontSize: 'sm',
+          fontWeight: 600,
+          transition: 'filter 0.15s ease',
+          _hover: { filter: 'brightness(1.15)' },
+        })}
+      >
+        みんなで遊ぶ →
+      </button>
+      <Modal ref={dialogRef} title="みんなで遊ぶ" onClose={close}>
+        <ul
+          className={css({
+            color: 'textMuted',
+            fontSize: 'sm',
+            paddingLeft: '5',
+            listStyle: 'disc',
+          })}
+        >
+          <li>ルームを作成し、URLを共有すると同じルームに参加できます</li>
+          <li>全員のレバーの値がリアルタイムに共有されます</li>
+          <li>1ルーム最大8人まで参加できます</li>
+          <li>お題はサーバーに保存されます。名前は保存されません</li>
+        </ul>
+        <button
+          type="button"
+          onClick={handleCreateRoom}
+          disabled={loading}
+          className={css({
+            paddingY: '3.5',
+            paddingX: '8',
+            border: 'none',
+            borderRadius: '999px',
+            background: 'accent',
+            color: 'accentText',
+            fontSize: 'md',
+            fontWeight: 600,
+            letterSpacing: '0.02em',
+            transition: 'filter 0.15s ease',
+            _hover: { filter: 'brightness(1.08)' },
+            _active: { filter: 'brightness(0.95)' },
+            _disabled: { filter: 'grayscale(0.4) opacity(0.6)', cursor: 'not-allowed' },
+          })}
+        >
+          {loading ? '作成中…' : 'ルームを作成'}
+        </button>
+        {error && <p className={css({ color: '#e53935', fontSize: 'sm' })}>{error}</p>}
+      </Modal>
+    </>
+  );
+}

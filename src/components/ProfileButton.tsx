@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { css } from '../../styled-system/css';
 import { ICON_PRESETS } from '../lib/icons';
 import type { PlayerInfo } from '../lib/types';
+import { Modal } from './Modal';
 import { PlayerForm } from './PlayerForm';
 
 type Props = {
@@ -66,62 +67,14 @@ export function ProfileButton({ player, onChange }: Props) {
           ✎
         </span>
       </button>
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: 背景クリックで閉じる補助操作。キーボードでは Esc で閉じられる */}
-      <dialog
-        ref={dialogRef}
-        aria-labelledby="profile-dialog-title"
-        // 背景（::backdrop）のクリックは dialog 自身へのクリックとして届くので、それで閉じる
-        onClick={(e) => {
-          if (e.target === e.currentTarget) close();
-        }}
-        className={css({
-          width: 'calc(100% - 2rem)',
-          maxWidth: '400px',
-          margin: 'auto',
-          padding: '0',
-          border: '1px solid token(colors.border)',
-          borderRadius: '16px',
-          background: 'surface',
-          color: 'text',
-          _backdrop: { background: 'rgb(0 0 0 / 0.6)' },
-        })}
-      >
-        <div className={css({ padding: '5', display: 'flex', flexDirection: 'column', gap: '5' })}>
-          <div
-            className={css({
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            })}
-          >
-            <h2 id="profile-dialog-title" className={css({ fontSize: 'lg' })}>
-              プロフィールを変更
-            </h2>
-            <button
-              type="button"
-              onClick={close}
-              aria-label="閉じる"
-              className={css({
-                padding: '1',
-                border: 'none',
-                background: 'transparent',
-                color: 'textMuted',
-                fontSize: 'xl',
-                lineHeight: 1,
-                _hover: { color: 'text' },
-              })}
-            >
-              ×
-            </button>
-          </div>
-          <PlayerForm
-            key={formKey}
-            initialValue={player}
-            submitLabel="変更する"
-            onSubmit={handleSubmit}
-          />
-        </div>
-      </dialog>
+      <Modal ref={dialogRef} title="プロフィールを変更" onClose={close}>
+        <PlayerForm
+          key={formKey}
+          initialValue={player}
+          submitLabel="変更する"
+          onSubmit={handleSubmit}
+        />
+      </Modal>
     </>
   );
 }

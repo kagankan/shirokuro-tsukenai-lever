@@ -1,6 +1,5 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { css } from '../../styled-system/css';
-import { CopyUrlButton } from './CopyUrlButton';
 import { Lever } from './Lever';
 import { LeverIcon } from './LeverIcon';
 import { ProfileButton } from './ProfileButton';
@@ -27,14 +26,6 @@ const headerClass = css({
   justifyContent: 'space-between',
   gap: '3',
   borderBottom: '1px solid token(colors.border)',
-});
-
-const topLinkClass = css({
-  color: 'textMuted',
-  fontSize: 'sm',
-  textDecoration: 'none',
-  transition: 'color 0.15s ease',
-  _hover: { color: 'accent' },
 });
 
 const topicSectionClass = css({
@@ -71,27 +62,24 @@ const leverSectionClass = css({
 });
 
 type Props = {
+  /** ヘッダーの中身（左右に振り分けて配置される） */
+  header: ReactNode;
   topic: ComponentProps<typeof TopicInput>;
   players: PlayerSlot[];
   lever: ComponentProps<typeof Lever>;
-  profile: ComponentProps<typeof ProfileButton>;
+  /** 省略するとプロフィールボタンを表示しない（1人モード用） */
+  profile?: ComponentProps<typeof ProfileButton>;
 };
 
 /**
- * ルーム画面のレイアウト。
+ * レバー画面のレイアウト（1人モード・ルーム共通）。
  * サーバー接続でもローカル state でも、必要なデータとハンドラを
  * props として渡すだけで利用できる純粋な見た目コンポーネント。
  */
-export function RoomLayout({ topic, players, lever, profile }: Props) {
+export function RoomLayout({ header, topic, players, lever, profile }: Props) {
   return (
     <div className={pageClass}>
-      <header className={headerClass}>
-        {/* App が持つ参加情報の state もリセットされるよう、SPA 内の遷移ではなく通常のリンクにする */}
-        <a href={import.meta.env.BASE_URL} className={topLinkClass}>
-          ← トップへ
-        </a>
-        <CopyUrlButton />
-      </header>
+      <header className={headerClass}>{header}</header>
       <section className={topicSectionClass}>
         <div className={topicIconWrapClass}>
           <LeverIcon />
@@ -103,7 +91,7 @@ export function RoomLayout({ topic, players, lever, profile }: Props) {
       </section>
       <section className={leverSectionClass}>
         <Lever {...lever} />
-        <ProfileButton {...profile} />
+        {profile && <ProfileButton {...profile} />}
       </section>
     </div>
   );

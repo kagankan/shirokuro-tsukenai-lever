@@ -28,11 +28,44 @@ function resultMap(page: import('@playwright/test').Page) {
 async function createRoom(page: import('@playwright/test').Page): Promise<string> {
   await page.goto(`${BASE_URL}/`);
   await page.waitForLoadState('networkidle');
-  await page.getByRole('button', { name: 'ルームを作成' }).click();
+  await page.getByRole('button', { name: 'みんなで遊ぶ' }).click();
+  await page
+    .getByRole('dialog', { name: 'みんなで遊ぶ' })
+    .getByRole('button', { name: 'ルームを作成' })
+    .click();
   // 参加画面に遷移するのを待つ
   await page.waitForURL(/\?room=/);
   return page.url();
 }
+
+test.describe('1人モード', () => {
+  test('トップでサーバーに接続せずにレバーを操作できる', async ({ page }) => {
+    await page.goto(`${BASE_URL}/`);
+
+    // 自分（あなた）が初期値 50 で結果マップに表示される
+    await expect(resultMap(page).getByText('あなた')).toBeVisible();
+    await expect(resultMap(page).getByText('50')).toBeVisible();
+
+    // レバーを 5刻み × 2回 動かすと結果マップに反映される
+    const lever = page.locator('[role="slider"]');
+    await lever.focus();
+    await lever.press('ArrowRight');
+    await lever.press('ArrowRight');
+    await expect(resultMap(page).getByText('60')).toBeVisible();
+
+    // ルーム URL にはなっていない
+    expect(page.url()).not.toContain('room=');
+  });
+
+  test('「このアプリについて」でアプリの説明がモーダル表示される', async ({ page }) => {
+    await page.goto(`${BASE_URL}/`);
+    await page.getByRole('button', { name: 'このアプリについて' }).click();
+    const dialog = page.getByRole('dialog', { name: '白黒つけないレバー' });
+    await expect(dialog.getByText(/ファンによる非公式アプリ/)).toBeVisible();
+    await dialog.getByRole('button', { name: '閉じる' }).click();
+    await expect(dialog).toBeHidden();
+  });
+});
 
 test.describe('ルーム機能', () => {
   test('自分自身が結果マップに表示される', async ({ browser }) => {
