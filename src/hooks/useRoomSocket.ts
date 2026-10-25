@@ -55,7 +55,8 @@ function reduce(prev: RoomState, msg: ServerMessage): RoomState {
 
 /**
  * ルームの Durable Object と WebSocket で接続し、参加者・レバー値・お題を同期する hook。
- * 切断時は指数バックオフで再接続し、その際は現在のレバー値で参加し直す。
+ * 切断時は指数バックオフで再接続し、その際は現在のレバー値とお題で参加し直す
+ * （お題はルームに誰もいなかった場合の復元にだけ使われる）。
  */
 export function useRoomSocket(
   roomId: string,
@@ -70,6 +71,9 @@ export function useRoomSocket(
   const wsRef = useRef<WebSocket | null>(null);
   const selfRef = useRef(self);
   selfRef.current = self;
+  // 再接続時の join で送るための、手元で最後に把握しているお題
+  const topicRef = useRef('');
+  if (state.status === 'joined') topicRef.current = state.topic;
   const lastLeverSentRef = useRef(0);
   const leverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -91,7 +95,10 @@ export function useRoomSocket(
       ws.onopen = () => {
         retry = 0;
         const { nickname, iconId, value } = selfRef.current;
-        ws.send(JSON.stringify({ type: 'join', nickname, iconId, value } satisfies ClientMessage));
+        const topic = topicRef.current;
+        ws.send(
+          JSON.stringify({ type: 'join', nickname, iconId, value, topic } satisfies ClientMessage),
+        );
         pingTimer = setInterval(() => ws.send(PING), PING_INTERVAL_MS);
       };
 

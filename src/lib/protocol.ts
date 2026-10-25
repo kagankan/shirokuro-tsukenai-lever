@@ -19,7 +19,11 @@ export type Player = {
 };
 
 export type ClientMessage =
-  | { type: 'join'; nickname: string; iconId: string; value: number }
+  /**
+   * topic は手元に表示中のお題。ルームに他の参加者がいない（＝サーバーがお題を持っていない）
+   * ときだけ採用され、全員の接続が切れた後の再接続でお題を復元するのに使われる
+   */
+  | { type: 'join'; nickname: string; iconId: string; value: number; topic: string }
   | { type: 'lever'; value: number }
   | { type: 'topic'; topic: string }
   | { type: 'profile'; nickname: string; iconId: string };

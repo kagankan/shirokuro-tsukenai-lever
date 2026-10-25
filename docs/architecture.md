@@ -9,16 +9,16 @@
 |  React SPA        | -------> |  Worker (ルーティング)         |
 |  (静的ホスティング) |          |     |                         |
 |                   | WebSocket|     v                         |
-|                   | <------> |  Durable Object "Room"        |
+|                   | <------> |  Durable Object "LeverRoom"   |
 |                   |          |  (1ルーム = 1インスタンス)      |
 |                   |          |  - WebSocket 中継             |
-|                   |          |  - SQLite ストレージ (お題)    |
+|                   |          |  - SQLite ストレージ (存在フラグのみ) |
 +-------------------+          +-------------------------------+
 ```
 
 参加者のブラウザは、ルームごとの Durable Object と WebSocket で接続する。
 Durable Object はルーム内の全接続を1か所で保持し、メッセージを他の参加者へ中継する。
-お題は Durable Object の SQLite ストレージに永続化する。
+お題はストレージに保存せず、接続中の WebSocket の attachment にだけ保持する（下記）。
 
 ## API（Worker）
 
@@ -39,7 +39,7 @@ Durable Object はルーム内の全接続を1か所で保持し、メッセー�
 
 | type | ペイロード | 説明 |
 |------|-----------|------|
-| `join` | `nickname, iconId, value` | 接続直後に送る。参加者として登録される |
+| `join` | `nickname, iconId, value, topic` | 接続直後に送る。参加者として登録される。`topic` は手元のお題で、ルームに他の参加者がいないときだけ採用される（再接続時の復元用） |
 | `lever` | `value` | レバー値の変更（50ms で throttle） |
 | `topic` | `topic` | お題の変更（入力欄の blur 時。Last Write Wins） |
 | `profile` | `nickname, iconId` | 自分のニックネーム・アイコンの変更 |
@@ -63,17 +63,22 @@ Durable Object はルーム内の全接続を1か所で保持し、メッセー�
 - クライアントは 30 秒ごとに `ping` を送り、Durable Object はランタイムの自動応答（`setWebSocketAutoResponse`）で `pong` を返す。自動応答は Durable Object を起こさない
 - 切断時は指数バックオフ（最大10秒）で再接続し、現在のレバー値で `join` し直す
 
-## Durable Object "Room" の設計
+## Durable Object "LeverRoom" の設計
 
 - **WebSocket Hibernation API** を使う（`ctx.acceptWebSocket`）。メッセージが無い間はインスタンスがメモリから退避され、課金対象の実行時間が発生しない
 - **参加者情報**（ニックネーム・アイコン・レバー値）は各 WebSocket の attachment（`serializeAttachment`）に保持する。ハイバネーションから復帰しても失われず、後から入室した参加者にも `init` で最新のレバー値を渡せる
-- **お題**は SQLite ストレージ（`ctx.storage`）に保存する
-- **ルームの削除は行わない**: 1ルームあたりの保存データは `created` フラグとお題（最大100文字）だけで、数百バイト程度。無料枠のストレージ上限に対して十分小さいため、削除処理は設けていない
+- **お題**もストレージには保存せず、参加者全員の attachment に同じ値を持たせる。変更時は全員分を書き換える
+  - 情報漏洩のリスクを減らすため、サーバーのディスクにはお題を残さない
+  - 全員の接続が切れる（全員の退室、デプロイ、全員のスマホのロックなど）と、お題はサーバーから消える
+  - 正本はあくまで Durable Object。入室時、他の参加者がいればその値を返し、誰もいなければ `join` の `topic`（クライアントが手元に表示しているお題）を採用する。これにより、画面を開いたまま全員の接続が一度切れても、再接続でお題が復元される
+- **SQLite ストレージ**（`ctx.storage`）には、ルームが作成済みかを示す `created` フラグだけを保存する
+- **ルームの削除は行わない**: 保存データは `created` フラグだけで、無料枠のストレージ上限に対して十分小さいため、削除処理は設けていない
+- 以前はお題をストレージに保存していた。保存済みのお題を消すため、旧クラス `Room` は `wrangler.jsonc` の migrations（`deleted_classes`）で全データごと削除し、`LeverRoom` に移行した。旧ルームのURLは「ルームが見つかりません」になる
 
 ### 使わないルームを削除したくなった場合
 
 Durable Object の **Alarm**（インスタンスごとに1つ設定できるタイマー。指定時刻になると `alarm()` メソッドが呼ばれる）を使う。
-`worker/index.ts` の `Room` クラスに以下を追加する。
+`worker/index.ts` の `LeverRoom` クラスに以下を追加する。
 
 ```ts
 /** 最後の参加者が抜けてからこの期間だれも来なければルームを削除する */

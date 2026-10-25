@@ -13,7 +13,7 @@ import {
 } from '../src/lib/protocol';
 
 type Env = {
-  ROOM: DurableObjectNamespace<Room>;
+  ROOM: DurableObjectNamespace<LeverRoom>;
 };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -37,13 +37,27 @@ function normalizeIconId(iconId: unknown): string {
   return String(iconId).slice(0, 32);
 }
 
+function normalizeTopic(topic: unknown): string {
+  return typeof topic === 'string' ? topic.slice(0, MAX_TOPIC_LENGTH) : '';
+}
+
+/**
+ * 各 WebSocket の attachment に保持するデータ。
+ * お題はルーム共通の値だが、ストレージに書かないためにここへ置き、全員分を同じ値で揃える。
+ */
+type Attachment = {
+  player: Player;
+  topic: string;
+};
+
 /**
  * 1ルーム = 1インスタンスの Durable Object。
  * WebSocket Hibernation API を使い、メッセージが来ていない間はメモリから退避される。
- * 参加者の情報（ニックネーム・アイコン・レバー値）は各 WebSocket の attachment に保持し、
- * お題だけを SQLite ストレージに永続化する。
+ * 参加者の情報（ニックネーム・アイコン・レバー値）とお題は各 WebSocket の attachment に保持し、
+ * ストレージにはルームの存在を示す created フラグだけを置く。
+ * そのため全員の接続が切れるとお題は消える（再接続時に join の topic で復元される）。
  */
-export class Room extends DurableObject<Env> {
+export class LeverRoom extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     // ping には DO を起こさずランタイムが自動で pong を返す
@@ -52,7 +66,7 @@ export class Room extends DurableObject<Env> {
 
   /** ルーム作成（Worker から RPC で呼ばれる） */
   async create(): Promise<void> {
-    await this.ctx.storage.put({ created: true, topic: '' });
+    await this.ctx.storage.put('created', true);
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -73,16 +87,16 @@ export class Room extends DurableObject<Env> {
       return;
     }
 
-    const self = ws.deserializeAttachment() as Player | null;
+    const attachment = ws.deserializeAttachment() as Attachment | null;
 
     if (msg.type === 'join') {
-      if (self) return;
+      if (attachment) return;
       if (!(await this.ctx.storage.get<boolean>('created'))) {
         this.send(ws, { type: 'not_found' });
         ws.close(CLOSE_NOT_FOUND, 'not_found');
         return;
       }
-      const others = this.joinedPlayers(ws);
+      const others = this.attachments(ws);
       if (others.length >= MAX_PLAYERS) {
         this.send(ws, { type: 'full' });
         ws.close(CLOSE_FULL, 'full');
@@ -94,19 +108,26 @@ export class Room extends DurableObject<Env> {
         iconId: normalizeIconId(msg.iconId),
         value: clampValue(msg.value),
       };
-      ws.serializeAttachment(player);
-      const topic = (await this.ctx.storage.get<string>('topic')) ?? '';
-      this.send(ws, { type: 'init', selfId: player.id, topic, players: [...others, player] });
+      // 他の参加者がいればその値が正。誰もいなければ、参加者が手元に持っている値で復元する
+      const topic = others[0]?.topic ?? normalizeTopic(msg.topic);
+      ws.serializeAttachment({ player, topic } satisfies Attachment);
+      this.send(ws, {
+        type: 'init',
+        selfId: player.id,
+        topic,
+        players: [...others.map((a) => a.player), player],
+      });
       this.broadcast({ type: 'player_joined', player }, ws);
       return;
     }
 
     // join 前のメッセージは無視
-    if (!self) return;
+    if (!attachment) return;
+    const self = attachment.player;
 
     if (msg.type === 'lever') {
       self.value = clampValue(msg.value);
-      ws.serializeAttachment(self);
+      ws.serializeAttachment(attachment);
       this.broadcast({ type: 'lever', id: self.id, value: self.value }, ws);
       return;
     }
@@ -114,14 +135,17 @@ export class Room extends DurableObject<Env> {
     if (msg.type === 'profile') {
       self.nickname = normalizeNickname(msg.nickname);
       self.iconId = normalizeIconId(msg.iconId);
-      ws.serializeAttachment(self);
+      ws.serializeAttachment(attachment);
       this.broadcast({ type: 'player_updated', player: self }, ws);
       return;
     }
 
     if (msg.type === 'topic') {
-      const topic = String(msg.topic).slice(0, MAX_TOPIC_LENGTH);
-      await this.ctx.storage.put('topic', topic);
+      const topic = normalizeTopic(msg.topic);
+      for (const s of this.ctx.getWebSockets()) {
+        const a = s.deserializeAttachment() as Attachment | null;
+        if (a) s.serializeAttachment({ ...a, topic } satisfies Attachment);
+      }
       this.broadcast({ type: 'topic', topic }, ws);
     }
   }
@@ -140,21 +164,22 @@ export class Room extends DurableObject<Env> {
   }
 
   private handleLeave(ws: WebSocket): void {
-    const self = ws.deserializeAttachment() as Player | null;
-    if (!self) return;
+    const attachment = ws.deserializeAttachment() as Attachment | null;
+    if (!attachment) return;
     // 二重に通知しないよう attachment を消す
     ws.serializeAttachment(null);
-    this.broadcast({ type: 'player_left', id: self.id }, ws);
+    this.broadcast({ type: 'player_left', id: attachment.player.id }, ws);
   }
 
-  private joinedPlayers(exclude?: WebSocket): Player[] {
-    const players: Player[] = [];
+  /** 参加済み（join 済み）の接続の attachment 一覧 */
+  private attachments(exclude?: WebSocket): Attachment[] {
+    const result: Attachment[] = [];
     for (const s of this.ctx.getWebSockets()) {
       if (s === exclude) continue;
-      const p = s.deserializeAttachment() as Player | null;
-      if (p) players.push(p);
+      const a = s.deserializeAttachment() as Attachment | null;
+      if (a) result.push(a);
     }
-    return players;
+    return result;
   }
 
   private send(ws: WebSocket, msg: ServerMessage): void {
