@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { css } from '../../styled-system/css';
 import type { PlayerSlot } from '../components/ResultMap';
+import { RoomHeader } from '../components/RoomHeader';
 import { RoomLayout } from '../components/RoomLayout';
 import { useRoomSocket } from '../hooks/useRoomSocket';
 import { useTopicSync } from '../hooks/useTopicSync';
@@ -101,6 +102,7 @@ function RoomBody({
 
   return (
     <RoomLayout
+      header={<RoomHeader />}
       topic={{ value: topic, onChange: setTopic, onBlur: handleBlur, inputRef }}
       players={players}
       lever={{ value: leverValue, onChange: onLeverChange }}

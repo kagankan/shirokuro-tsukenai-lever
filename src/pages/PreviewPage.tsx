@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { PlayerSlot } from '../components/ResultMap';
+import { RoomHeader } from '../components/RoomHeader';
 import { RoomLayout } from '../components/RoomLayout';
 import type { PlayerInfo } from '../lib/types';
 
@@ -27,6 +28,7 @@ export function PreviewPage() {
 
   return (
     <RoomLayout
+      header={<RoomHeader />}
       topic={{ value: topic, onChange: setTopic }}
       players={players}
       lever={{ value: myValue, onChange: setMyValue }}

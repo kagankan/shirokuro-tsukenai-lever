@@ -4,7 +4,7 @@ import type { PlayerInfo } from './lib/types';
 import { JoinPage } from './pages/JoinPage';
 import { PreviewPage } from './pages/PreviewPage';
 import { RoomPage } from './pages/RoomPage';
-import { TopPage } from './pages/TopPage';
+import { SoloPage } from './pages/SoloPage';
 
 const isPreviewMode = new URLSearchParams(window.location.search).has('preview');
 
@@ -18,7 +18,7 @@ function App() {
   }
 
   if (!roomId) {
-    return <TopPage onCreated={setRoomId} />;
+    return <SoloPage onRoomCreated={setRoomId} />;
   }
 
   if (!player) {
