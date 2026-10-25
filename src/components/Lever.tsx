@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { css } from '../../styled-system/css';
+import { playLeverSound, prepareLeverSound } from '../lib/leverSound';
 
 const MIN_ANGLE = -60; // value=0
 const MAX_ANGLE = 60; // value=100
@@ -39,6 +40,8 @@ type Props = {
 export function Lever({ value, onChange }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+  /** ドラッグ開始時の値。離したときに値が変わっていれば操作音を鳴らす */
+  const dragStartValue = useRef(value);
   // ドラッグ中は値を5刻みにしつつ、見た目のアームは指に追従させて滑らかに動かす
   const [dragAngle, setDragAngle] = useState<number | null>(null);
 
@@ -67,10 +70,12 @@ export function Lever({ value, onChange }: Props) {
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       dragging.current = true;
+      dragStartValue.current = value;
+      prepareLeverSound();
       e.currentTarget.setPointerCapture(e.pointerId);
       updateFromPointer(computeAngleFromPointer(e.clientX, e.clientY));
     },
-    [computeAngleFromPointer, updateFromPointer],
+    [value, computeAngleFromPointer, updateFromPointer],
   );
 
   const handlePointerMove = useCallback(
@@ -82,15 +87,22 @@ export function Lever({ value, onChange }: Props) {
   );
 
   const handlePointerUp = useCallback(() => {
+    if (!dragging.current) return;
     dragging.current = false;
     // 指を離したら、アームを5刻みの値の位置へ戻す（transition でアニメーション）
     setDragAngle(null);
-  }, []);
+    if (value !== dragStartValue.current) void playLeverSound();
+  }, [value]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') onChange(Math.max(0, value - VALUE_STEP));
-      else if (e.key === 'ArrowRight') onChange(Math.min(100, value + VALUE_STEP));
+      let next = value;
+      if (e.key === 'ArrowLeft') next = Math.max(0, value - VALUE_STEP);
+      else if (e.key === 'ArrowRight') next = Math.min(100, value + VALUE_STEP);
+      if (next === value) return;
+      prepareLeverSound();
+      void playLeverSound();
+      onChange(next);
     },
     [value, onChange],
   );
